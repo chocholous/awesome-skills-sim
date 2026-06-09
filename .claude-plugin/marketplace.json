@@ -83,6 +83,28 @@
       "version": "1.0.0"
     },
     {
+      "name": "apify-x-twitter-data",
+      "source": "./skills/apify-x-twitter-data",
+      "skills": "./",
+      "description": "Collect public X/Twitter tweets, timelines, search results, followers, following, lists, and community member datasets with Xquik Apify Actors. Use when user asks for X/Twitter data extraction, social listening, audience analysis, creator research, follower exports, tweet exports, or list/community analysis.",
+      "keywords": [
+        "x",
+        "twitter",
+        "tweets",
+        "followers",
+        "following",
+        "social-listening",
+        "audience-analysis",
+        "creator-research",
+        "hashtags",
+        "lists",
+        "communities",
+        "exports"
+      ],
+      "category": "data-extraction",
+      "version": "1.0.0"
+    },
+    {
       "name": "apify-financial-services",
       "source": "./skills/apify-financial-services",
       "skills": [
