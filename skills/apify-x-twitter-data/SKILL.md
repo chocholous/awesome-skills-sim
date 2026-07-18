@@ -9,6 +9,8 @@ author_url: https://github.com/kriptoburak
 
 Collect public X/Twitter tweet and profile-relation datasets with Xquik Apify Actors, then summarize or export the results.
 
+Xquik is an independent third-party service. Not affiliated with X Corp. "Twitter" and "X" are trademarks of X Corp.
+
 **CLI rules:** Always pass `--user-agent apify-awesome-skills/apify-x-twitter-data`, `--json` for Actor metadata and calls, and `--format json` or `--format csv` for dataset exports. Append `2>/dev/null` so CLI progress messages do not break JSON parsing.
 
 ## Prerequisites
