@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# lint_telemetry.sh — verify every apify CLI invocation in SKILL.md files
-# includes a --user-agent apify-awesome-skills/ flag.
+# lint_telemetry.sh - verify every apify CLI invocation in SKILL.md files
+# includes its skill-specific --user-agent flag.
 #
 # Only lines INSIDE fenced code blocks (``` ... ```) are checked.
 # Prose mentions of apify commands are ignored.
@@ -35,6 +35,12 @@ if [ ${#SKILL_FILES[@]} -eq 0 ]; then
 fi
 
 for file in "${SKILL_FILES[@]}"; do
+  skill_name="$(basename "$(dirname "$file")")"
+  if [ "$skill_name" = "_template" ]; then
+    skill_name="REPLACE-skill-name"
+  fi
+  expected_user_agent="--user-agent apify-awesome-skills/$skill_name"
+
   # Read file lines into indexed array
   idx=0
   unset LINES
@@ -78,13 +84,13 @@ for file in "${SKILL_FILES[@]}"; do
     done
     [ "$matched" -eq 0 ] && continue
 
-    # Look for --user-agent apify-awesome-skills/ on this line or within WINDOW lines
+    # Look for the skill-specific user agent on this line or within WINDOW lines
     found=0
     end=$(( i + WINDOW ))
     [ $end -ge $total ] && end=$(( total - 1 ))
 
     for (( j=i; j<=end; j++ )); do
-      if [[ "${LINES[$j]}" == *"--user-agent apify-awesome-skills/"* ]]; then
+      if [[ "${LINES[$j]}" == *"$expected_user_agent"* ]]; then
         found=1
         break
       fi
@@ -105,8 +111,9 @@ for file in "${SKILL_FILES[@]}"; do
     if [ "$found" -eq 0 ]; then
       lineno=$(( i + 1 ))
       clean_line="$(printf '%s' "$line" | sed 's/^[[:space:]]*//')"
-      echo "lint: $file:$lineno: missing --user-agent apify-awesome-skills/ flag"
+      echo "lint: $file:$lineno: missing skill-specific user-agent flag"
       echo "      offending line: $clean_line"
+      echo "      expected: $expected_user_agent"
       FAIL=$(( FAIL + 1 ))
     fi
   done
