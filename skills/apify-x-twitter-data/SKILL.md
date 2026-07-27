@@ -74,13 +74,15 @@ Use conservative defaults unless the user asks for more:
 |--------|-------------|------------|
 | `tweet-lookup` | 25 tweets | `startUrls`, `tweetIds`, `maxItems` |
 | `tweet-search` | 100 tweets per run | `searchTerms`, `queryType`, `maxItems`, `includeSearchTerms` |
-| `timeline` | 100 tweets per handle | `twitterHandles`, `maxItems` |
+| `timeline` | 100 tweets per run | `mode`, `twitterHandles`, `maxItems`, `maxItemsPerTarget` |
 | `profile-relation` | 200 profiles | `twitterHandles`, `relation`, `maxItems`, `outputMode` |
 | `list-relation` | 200 profiles | `startUrls` or `listIds`, `relation`, `maxItems` |
 | `community-relation` | 200 profiles | `startUrls` or `communityIds`, `relation`, `maxItems` |
 
 Confirm before large runs because they use more Apify credits and can take longer.
-`maxItems` caps the whole run, including runs with several search terms.
+`maxItems` caps the whole run, including several search terms or handles.
+For balanced multi-handle timelines, use explicit `profileTweets` mode with
+`maxItemsPerTarget`, or split handles into separate approved runs.
 Check each Actor's live Apify pricing box before starting a paid run.
 
 ### Step 4: Run the Actor
