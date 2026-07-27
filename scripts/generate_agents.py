@@ -9,10 +9,10 @@ Also validates that .claude-plugin/marketplace.json is in sync with discovered
 skills. Fails (exit 1) on hard errors; prints nothing for healthy skills.
 
 Frontmatter fields:
-  - name         (required) - must match folder name, kebab-case, apify- prefix
-  - description  (required) - max 1024 chars per agentskills.io spec
-  - author       (optional) - free string
-  - author_url   (optional) - must be a valid http(s) URL if present
+  - name         (required) — must match folder name, kebab-case, apify- prefix
+  - description  (required) — max 1024 chars per agentskills.io spec
+  - author       (optional) — free string
+  - author_url   (optional) — must be a valid http(s) URL if present
 
 Usage:
   uv run scripts/generate_agents.py
@@ -71,7 +71,7 @@ def parse_frontmatter(text: str) -> dict[str, str]:
         value = raw_value.strip()
 
         if value in {">-", ">", "|", "|-"}:
-            # Folded/block scalar - collect indented continuation lines
+            # Folded/block scalar — collect indented continuation lines
             parts: list[str] = []
             i += 1
             while i < len(lines) and (lines[i].startswith((" ", "\t")) or lines[i] == ""):
@@ -91,7 +91,7 @@ def collect_skills() -> list[dict[str, str]]:
     """Discover all SKILL.md files under skills/ (excluding _template, etc.).
 
     Used by the validator (validate_marketplace_sync) to cross-check filesystem
-    against marketplace.json. NOT used by the doc generators - those iterate
+    against marketplace.json. NOT used by the doc generators — those iterate
     marketplace.json directly via plugins_to_rows() so nested-plugin entries
     (e.g. apify-financial-services with skills=["./skills"]) are surfaced as a
     single parent row rather than missed.
@@ -176,7 +176,7 @@ def plugins_to_rows(plugins: list[dict]) -> list[dict[str, str]]:
 def render_template(template: str, rows: list[dict[str, str]]) -> str:
     """Tiny Mustache-like renderer for the {{#skills}}...{{/skills}} loop.
 
-    `rows` come from plugins_to_rows() - one row per marketplace.json plugin.
+    `rows` come from plugins_to_rows() — one row per marketplace.json plugin.
     """
 
     def repl(match: re.Match[str]) -> str:
@@ -209,7 +209,7 @@ def load_marketplace() -> dict:
 def generate_readme_table(rows: list[dict[str, str]]) -> str:
     """Render the README skills table with an Author column.
 
-    `rows` come from plugins_to_rows() - one row per marketplace.json plugin.
+    `rows` come from plugins_to_rows() — one row per marketplace.json plugin.
     """
     lines = [
         "| Name | Description | Author |",
@@ -224,7 +224,7 @@ def generate_readme_table(rows: list[dict[str, str]]) -> str:
         elif row["author"]:
             author_cell = row["author"]
         else:
-            author_cell = "-"
+            author_cell = "—"
         lines.append(f"| {doc_link} | {description} | {author_cell} |")
     return "\n".join(lines)
 
@@ -241,7 +241,7 @@ def update_readme(rows: list[dict[str, str]]) -> bool:
     if start_idx == -1 or end_idx == -1 or end_idx < start_idx:
         print(
             f"Warning: README.md markers {README_TABLE_START}/{README_TABLE_END} "
-            "missing or out of order - skills table not regenerated.",
+            "missing or out of order — skills table not regenerated.",
             file=sys.stderr,
         )
         return False
@@ -371,7 +371,7 @@ def main() -> int:
             print(f"  - {err}", file=sys.stderr)
         return 1
 
-    # Docs are driven by marketplace.json - one row per plugin entry, so
+    # Docs are driven by marketplace.json — one row per plugin entry, so
     # nested-plugin layouts (e.g. apify-financial-services) appear as a single
     # parent row rather than being skipped by the filesystem walk.
     marketplace = load_marketplace()

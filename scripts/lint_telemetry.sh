@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# lint_telemetry.sh - verify every apify CLI invocation in SKILL.md files
+# lint_telemetry.sh — verify every apify CLI invocation in SKILL.md files
 # includes its skill-specific --user-agent flag.
 #
 # Only lines INSIDE fenced code blocks (``` ... ```) are checked.
