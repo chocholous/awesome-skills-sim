@@ -49,12 +49,12 @@ If the request mixes tweet content and follower data, run the tweet Actor first,
 
 | Intent | Actor ID | Best for |
 |--------|----------|----------|
-| `tweet-lookup` | `xquik/x-tweet-scraper` | Tweet URLs, tweet IDs, and profile URLs |
-| `tweet-search` | `xquik/x-tweet-scraper` | Search terms, hashtags, account queries, and date windows |
-| `timeline` | `xquik/x-tweet-scraper` | Public posts from one or more handles |
-| `profile-relation` | `xquik/x-follower-scraper` | Followers, following, and verified followers |
-| `list-relation` | `xquik/x-follower-scraper` | List members and list subscribers |
-| `community-relation` | `xquik/x-follower-scraper` | Community member exports |
+| `tweet-lookup` | [`xquik/x-tweet-scraper`](https://apify.com/xquik/x-tweet-scraper) | Tweet URLs, tweet IDs, and profile URLs |
+| `tweet-search` | [`xquik/x-tweet-scraper`](https://apify.com/xquik/x-tweet-scraper) | Search terms, hashtags, account queries, and date windows |
+| `timeline` | [`xquik/x-tweet-scraper`](https://apify.com/xquik/x-tweet-scraper) | Public posts from one or more handles |
+| `profile-relation` | [`xquik/x-follower-scraper`](https://apify.com/xquik/x-follower-scraper) | Followers, following, and verified followers |
+| `list-relation` | [`xquik/x-follower-scraper`](https://apify.com/xquik/x-follower-scraper) | List members and list subscribers |
+| `community-relation` | [`xquik/x-follower-scraper`](https://apify.com/xquik/x-follower-scraper) | Community member exports |
 
 ### Step 3: Fetch Schema and Build Input
 
