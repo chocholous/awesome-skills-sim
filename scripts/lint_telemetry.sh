@@ -39,7 +39,8 @@ for file in "${SKILL_FILES[@]}"; do
   if [ "$skill_name" = "_template" ]; then
     skill_name="REPLACE-skill-name"
   fi
-  expected_user_agent="--user-agent apify-awesome-skills/$skill_name"
+  expected_user_agent="apify-awesome-skills/$skill_name"
+  user_agent_pattern="(^|[[:space:]])--user-agent[[:space:]]+['\"]?${expected_user_agent}['\"]?([[:space:]]|$)"
 
   # Read file lines into indexed array
   idx=0
@@ -84,27 +85,23 @@ for file in "${SKILL_FILES[@]}"; do
     done
     [ "$matched" -eq 0 ] && continue
 
-    # Look for the skill-specific user agent on this line or within WINDOW lines
+    # Look for the exact skill-specific user agent on this command's lines.
     found=0
     end=$(( i + WINDOW ))
     [ $end -ge $total ] && end=$(( total - 1 ))
 
     for (( j=i; j<=end; j++ )); do
-      if [[ "${LINES[$j]}" == *"$expected_user_agent"* ]]; then
+      if [ "$j" -gt "$i" ]; then
+        prev="${LINES[$((j-1))]}"
+        [[ "$prev" != *\\ ]] && break
+      fi
+      if [[ "${LINES[$j]}" =~ $user_agent_pattern ]]; then
         found=1
         break
       fi
       # Stop at the closing fence of the code block
       if [[ "${LINES[$j]}" =~ ^[[:space:]]*(\`\`\`|~~~) ]]; then
         break
-      fi
-      # Stop at blank lines unless the previous line is a continuation (\)
-      if [ "$j" -gt "$i" ]; then
-        prev="${LINES[$((j-1))]}"
-        current="${LINES[$j]}"
-        if [[ "$prev" != *\\ ]] && [[ -z "${current// /}" ]]; then
-          break
-        fi
       fi
     done
 
@@ -113,7 +110,7 @@ for file in "${SKILL_FILES[@]}"; do
       clean_line="$(printf '%s' "$line" | sed 's/^[[:space:]]*//')"
       echo "lint: $file:$lineno: missing skill-specific user-agent flag"
       echo "      offending line: $clean_line"
-      echo "      expected: $expected_user_agent"
+      echo "      expected: --user-agent $expected_user_agent"
       FAIL=$(( FAIL + 1 ))
     fi
   done
