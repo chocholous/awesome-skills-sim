@@ -3,6 +3,9 @@ name: apify-zillow-real-estate-leads
 description: Build real-estate agent and listing lead lists from Zillow - property details plus the listing agent's email, cell phone, brokerage and license number - and fall through to web enrichment only for the rows Zillow leaves empty. Use when the user says things like "get real estate agent emails", "scrape Zillow listings", "find realtor contacts in a ZIP code", "build a list of listing agents", "Zillow lead generation", "pull homes for sale with agent contact", "recently sold comps", or "who is the listing agent". The agent's phone is in the listing row every time and the email about 4 times in 5, so this skill leads with what the property scrape already returned and only pays for contact-enrichment on the remainder - instead of routing every lead through a Google Maps email scraper, which costs more and matches the wrong business.
 author: afanasenkoa
 author_url: https://github.com/afanasenkoa
+metadata:
+  category: data-extraction
+  keywords: "zillow, real-estate, realtor, listing-agent, agent-email, property, leads, lead-generation, zip-code, zestimate, comps, for-sale, rental, brokerage, contact-enrichment"
 ---
 
 # Zillow property & agent lead builder
