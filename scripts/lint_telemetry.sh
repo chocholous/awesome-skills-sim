@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # lint_telemetry.sh — verify every apify CLI invocation in SKILL.md files
-# includes a --user-agent apify-awesome-skills/ flag.
+# follows the three telemetry rules from CONTRIBUTING.md:
+#   Rule 1 — --user-agent apify-awesome-skills/<skill-name>
+#   Rule 2 — --json (or --format json for `datasets get-items`)
+#   Rule 3 — 2>/dev/null stderr redirect
+# Exception: commands fetching an Actor README (--readme) return markdown,
+# not JSON — Rules 2 and 3 do not apply to them (Rule 1 still does).
 #
 # Only lines INSIDE fenced code blocks (``` ... ```) are checked.
 # Prose mentions of apify commands are ignored.
@@ -78,36 +83,56 @@ for file in "${SKILL_FILES[@]}"; do
     done
     [ "$matched" -eq 0 ] && continue
 
-    # Look for --user-agent apify-awesome-skills/ on this line or within WINDOW lines
-    found=0
+    # Look for the required flags on this line or within WINDOW lines
+    found_ua=0
+    found_json=0
+    found_stderr=0
+    has_readme=0
     end=$(( i + WINDOW ))
     [ $end -ge $total ] && end=$(( total - 1 ))
 
     for (( j=i; j<=end; j++ )); do
-      if [[ "${LINES[$j]}" == *"--user-agent apify-awesome-skills/"* ]]; then
-        found=1
-        break
+      window_line="${LINES[$j]}"
+      [[ "$window_line" == *"--user-agent apify-awesome-skills/"* ]] && found_ua=1
+      if [[ "$window_line" == *"--json"* ]] || [[ "$window_line" == *"--format json"* ]]; then
+        found_json=1
       fi
+      [[ "$window_line" == *"2>/dev/null"* ]] && found_stderr=1
+      [[ "$window_line" == *"--readme"* ]] && has_readme=1
       # Stop at the closing fence of the code block
-      if [[ "${LINES[$j]}" =~ ^[[:space:]]*(\`\`\`|~~~) ]]; then
+      if [ "$j" -gt "$i" ] && [[ "$window_line" =~ ^[[:space:]]*(\`\`\`|~~~) ]]; then
         break
       fi
       # Stop at blank lines unless the previous line is a continuation (\)
       if [ "$j" -gt "$i" ]; then
         prev="${LINES[$((j-1))]}"
-        current="${LINES[$j]}"
-        if [[ "$prev" != *\\ ]] && [[ -z "${current// /}" ]]; then
+        if [[ "$prev" != *\\ ]] && [[ -z "${window_line// /}" ]]; then
           break
         fi
       fi
     done
 
-    if [ "$found" -eq 0 ]; then
-      lineno=$(( i + 1 ))
-      clean_line="$(printf '%s' "$line" | sed 's/^[[:space:]]*//')"
+    lineno=$(( i + 1 ))
+    clean_line="$(printf '%s' "$line" | sed 's/^[[:space:]]*//')"
+
+    if [ "$found_ua" -eq 0 ]; then
       echo "lint: $file:$lineno: missing --user-agent apify-awesome-skills/ flag"
       echo "      offending line: $clean_line"
       FAIL=$(( FAIL + 1 ))
+    fi
+
+    # Rules 2 + 3 do not apply to README fetches (--readme output is markdown)
+    if [ "$has_readme" -eq 0 ]; then
+      if [ "$found_json" -eq 0 ]; then
+        echo "lint: $file:$lineno: missing --json flag (or --format json for datasets get-items)"
+        echo "      offending line: $clean_line"
+        FAIL=$(( FAIL + 1 ))
+      fi
+      if [ "$found_stderr" -eq 0 ]; then
+        echo "lint: $file:$lineno: missing 2>/dev/null stderr redirect"
+        echo "      offending line: $clean_line"
+        FAIL=$(( FAIL + 1 ))
+      fi
     fi
   done
 done
@@ -117,6 +142,9 @@ if [ "$FAIL" -gt 0 ]; then
   echo "lint: $FAIL violation(s) found."
   echo "      Every apify CLI call in SKILL.md code blocks must include:"
   echo "        --user-agent apify-awesome-skills/<skill-dir-name>"
+  echo "        --json (or --format json for datasets get-items)"
+  echo "        2>/dev/null"
+  echo "      Exception: --readme commands are exempt from --json and 2>/dev/null."
   echo "      See CONTRIBUTING.md § 'Telemetry on CLI commands' for details."
   exit 1
 fi
