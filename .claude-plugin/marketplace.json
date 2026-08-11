@@ -99,6 +99,26 @@
       "category": "data-extraction"
     },
     {
+      "name": "apify-bounty-radar",
+      "source": "./skills/apify-bounty-radar",
+      "skills": "./",
+      "description": "Find, screen, and prioritize public GitHub bounty opportunities with Apify Actors. Use when a user asks to find paid GitHub issues, Algora or Polar bounties, bounty races, claimable open-source tasks, or recently posted contribution opportunities, and needs evidence on payout terms, competition, assignment rules, and claimability before starting work.",
+      "keywords": [
+        "bounty",
+        "github",
+        "algora",
+        "polar",
+        "open-source",
+        "issue-triage",
+        "paid-work",
+        "contribution",
+        "search",
+        "crawler",
+        "claimability"
+      ],
+      "category": "data-extraction"
+    },
+    {
       "name": "apify-easy-competitive-intelligence",
       "source": "./skills/apify-easy-competitive-intelligence",
       "skills": "./",
@@ -377,6 +397,25 @@
         "no-api-key",
         "micropayments",
         "web-data"
+      ],
+      "category": "data-extraction"
+    },
+    {
+      "name": "apify-youtube-creator-research",
+      "source": "./skills/apify-youtube-creator-research",
+      "skills": "./",
+      "description": "Research YouTube channels, videos, Shorts, playlists, search results, comments, and creator positioning using Apify Actors. Use when the user asks for YouTube competitor analysis, creator research, content strategy, keyword/video discovery, audience comment mining, Shorts analysis, sponsor/brand mention discovery, or channel performance benchmarking.",
+      "keywords": [
+        "youtube",
+        "creator-research",
+        "channel-analysis",
+        "video-research",
+        "comments",
+        "shorts",
+        "content-strategy",
+        "competitor-analysis",
+        "audience-research",
+        "apify"
       ],
       "category": "data-extraction"
     }
