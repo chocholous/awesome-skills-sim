@@ -16,6 +16,9 @@ description: |
   data, so don't ask the user to declare it. Requires Apify MCP tools.
 author: Natasha Lekh
 author_url: https://github.com/natashalekh
+metadata:
+  category: data-extraction
+  keywords: "influencer, brand, collaboration, sponsored, branded-content, partnership, instagram, meta-ad-library, creator-economy"
 ---
 
 # Influencer–Brand Collaborations
