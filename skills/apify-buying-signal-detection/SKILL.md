@@ -4,19 +4,7 @@ description: Set up a recurring buying-signal detection pipeline that finds comp
 author: Fabian Maume
 author_url: https://github.com/fmaume
 metadata:
-  keywords:
-    - buying-signals
-    - intent-data
-    - lead-generation
-    - outbound
-    - prospecting
-    - hiring-signals
-    - funding-signals
-    - linkedin-signals
-    - sales-triggers
-    - icp
-    - scheduled-pipeline
-    - b2b
+  keywords: "buying-signals, intent-data, lead-generation, outbound, prospecting, hiring-signals, funding-signals, linkedin-signals, sales-triggers, icp, scheduled-pipeline, b2b"
   category: data-extraction
   version: 1.0.0
 ---
