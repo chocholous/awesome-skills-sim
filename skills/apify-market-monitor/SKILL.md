@@ -5,6 +5,8 @@ author: apifyforge
 author_url: https://github.com/apifyforge
 license: MIT
 metadata:
+  category: data-extraction
+  keywords: "monitoring, competitor-tracking, market-intelligence, price-tracking, change-detection, tiktok, instagram, amazon, airbnb, zillow, linkedin, google-maps, trends, watchlist, scheduling"
   version: "1.0"
 ---
 
