@@ -159,7 +159,7 @@ apify actors search "<query>" \
   --json --limit 10 2>/dev/null
 apify actors info <actor> --input \
   --user-agent apify-awesome-skills/apify-orchestrator-actor-development \
-  --json 2>/dev/null
+  2>/dev/null
 
 # Deploy + remote run
 apify push
