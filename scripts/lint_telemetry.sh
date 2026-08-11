@@ -30,8 +30,10 @@ CLI_PATTERNS=(
   "apify actors info"
   "apify datasets get-items"
   "apify call"
-  "apify run"
 )
+# NOTE: `apify run` is deliberately NOT a pattern — it runs an actor locally
+# during development and the real CLI has no --json/--user-agent flags there
+# (verified against apify-cli 1.7/1.8); demanding them forces broken commands.
 
 # Find SKILL.md files: all under skills/ by default, or only under the
 # dirs/files passed as arguments (used by CI to lint just the skills a PR
