@@ -6,6 +6,7 @@ author_url: https://github.com/johnisanerd
 license: MIT
 metadata:
   version: "1.0"
+  keywords: "apify, linkedin, linkedin-posts, posts, scraper, json, social-media, content, mcp, claude"
 ---
 
 # LinkedIn Posts Scraper: Posts to Structured JSON
