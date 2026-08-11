@@ -348,6 +348,46 @@
       "category": "data-extraction"
     },
     {
+      "name": "apify-google-maps-leads",
+      "source": "./skills/apify-google-maps-leads",
+      "skills": "./",
+      "description": "Build a local-business lead database from Google Maps in one Apify pipeline — search by target audience + geography, enrich each place with company contacts (from website), leads enrichment (people with names/emails/phones/LinkedIn), Instagram + Facebook profile data, and optionally reviews for lead scoring. For places that come back without named contacts, escalate to apify/ai-web-scraper to pull owner / decision-maker names from the business website. Backfill missing phones via scalelist/phone-finder and missing emails via scalelist/email-finder. Deliver a deduplicated CSV. Use whenever the user asks to build a lead list from Google Maps, scrape local businesses, generate B2B leads by city/industry, find owner/decision-maker contacts for restaurants / dentists / gyms / hotels / any local vertical, score leads by review volume or rating, or asks for a \"Google Maps lead-gen pipeline\".",
+      "keywords": [
+        "google-maps",
+        "leads",
+        "lead-generation",
+        "local-business",
+        "b2b",
+        "prospecting",
+        "google-places",
+        "lead-scoring",
+        "reviews",
+        "instagram-enrichment",
+        "facebook-enrichment",
+        "ai-web-scraper",
+        "name-discovery",
+        "scalelist",
+        "phone-finder",
+        "email-finder",
+        "contact-enrichment"
+      ],
+      "category": "data-extraction"
+    },
+    {
+      "name": "apify-google-maps-photo-download",
+      "source": "./skills/apify-google-maps-photo-download",
+      "skills": "./",
+      "description": "Bulk google maps photo download with the Apify Google Maps Photos API Actor (johnvc/google-maps-photos-api). Name a place, paste a Google Maps URL, or search a category and city, and get one row per photo with the full-size image url, a thumbnail, its gallery position, and a stable photo id you can de-duplicate on across runs. One run sweeps up to 20 places, so a whole neighbourhood of businesses comes back in a single pass instead of one right-click at a time. Filter to a gallery section when you only want menus, interiors, or owner uploads. Use when the user wants to download google maps photos, bulk place images, a google maps images api, place photos api access, or imagery for a directory, listings site, or dataset. Pay per photo returned, MCP-ready for Claude and other AI agents.",
+      "keywords": [
+        "apify",
+        "google-maps",
+        "photos",
+        "images",
+        "mcp"
+      ],
+      "category": "data-extraction"
+    },
+    {
       "name": "apify-google-street-view-api",
       "source": "./skills/apify-google-street-view-api",
       "skills": "./",
