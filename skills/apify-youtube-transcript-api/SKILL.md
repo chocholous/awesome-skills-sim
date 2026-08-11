@@ -5,6 +5,8 @@ author: John Cole
 author_url: https://github.com/johnisanerd
 license: MIT
 metadata:
+  category: data-extraction
+  keywords: "apify, youtube, youtube-transcript, transcript, subtitles, captions, api"
   version: "1.0"
 ---
 
