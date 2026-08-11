@@ -118,6 +118,11 @@ jobs:
 
   regenerate:
     if: github.event_name == 'push' && github.actor != 'awesome-skills-sim-bot[bot]'
+    # Serialize regen runs: two quick merges must not race each other's push
+    # (a lost race can leave main's catalog stale until the next push).
+    concurrency:
+      group: regenerate-main
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     steps:
       - name: Create GitHub App token
@@ -127,24 +132,32 @@ jobs:
           app-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - name: Checkout
+      - name: Checkout latest main
         uses: actions/checkout@v4
         with:
+          ref: main
           token: ${{ steps.app-token.outputs.token }}
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v4
 
-      - name: Regenerate marketplace.json, AGENTS.md and README skills table
-        run: uv run scripts/generate_agents.py
-
-      - name: Commit and push regenerated catalog
+      - name: Regenerate and push catalog
         run: |
-          if git diff --quiet; then
-            echo "Catalog already at fixed point — nothing to push."
-            exit 0
-          fi
           git config user.name "awesome-skills-sim-bot[bot]"
           git config user.email "awesome-skills-sim-bot[bot]@users.noreply.github.com"
-          git commit -am "chore: regenerate marketplace.json, AGENTS.md and README [bot]"
-          git push
+          for attempt in 1 2 3; do
+            uv run scripts/generate_agents.py
+            if git diff --quiet; then
+              echo "Catalog already at fixed point — nothing to push."
+              exit 0
+            fi
+            git commit -am "chore: regenerate marketplace.json, AGENTS.md and README [bot]"
+            if git push; then
+              exit 0
+            fi
+            echo "Push rejected (main moved) — refreshing and retrying ($attempt/3)."
+            git fetch origin main
+            git reset --hard origin/main
+          done
+          echo "::error::regenerate: could not push after 3 attempts — main is moving too fast; re-run this job."
+          exit 1
