@@ -145,10 +145,10 @@ Fetch the Actor summary, input schema, and README:
 # Summary (title, description, pricing, stats)
 apify actors info "ACTOR_ID" --user-agent apify-awesome-skills/apify-ecommerce --json 2>/dev/null
 
-# Input schema — the actor object embeds it as an escaped JSON string
-# under .taggedBuilds.latest.build.inputSchema; unescape it with jq's fromjson:
-apify actors info "ACTOR_ID" --user-agent apify-awesome-skills/apify-ecommerce --json 2>/dev/null \
-  | jq '.taggedBuilds.latest.build.inputSchema | fromjson'
+# Input schema — use --input WITHOUT --json to get the clean schema directly.
+# (Adding --json returns the full ~250 KB actor object instead, with the schema
+#  buried as an escaped string under .taggedBuilds.latest.build.inputSchema.)
+apify actors info "ACTOR_ID" --user-agent apify-awesome-skills/apify-ecommerce --input 2>/dev/null
 
 # README (capabilities, examples, gotchas)
 apify actors info "ACTOR_ID" --user-agent apify-awesome-skills/apify-ecommerce --readme 2>/dev/null
@@ -214,12 +214,16 @@ apify datasets info DATASET_ID --json \
 apify datasets get-items DATASET_ID --limit 5 \
   --user-agent apify-awesome-skills/apify-ecommerce --format json 2>/dev/null
 
+# CSV file
+apify datasets get-items DATASET_ID \
+  --user-agent apify-awesome-skills/apify-ecommerce --format csv 2>/dev/null > YYYY-MM-DD_OUTPUT_FILE.csv
+
 # JSON file
 apify datasets get-items DATASET_ID \
   --user-agent apify-awesome-skills/apify-ecommerce --format json 2>/dev/null > YYYY-MM-DD_OUTPUT_FILE.json
 ```
 
-For a CSV or Excel file, swap `--format json` for `csv` or `xlsx` in the same command (other options: `jsonl`, `xml`, `rss`, `html`). Use `--offset N` to paginate large datasets.
+Other `--format` options: `jsonl`, `xlsx`, `xml`, `rss`, `html`. Use `--offset N` to paginate large datasets.
 
 **Tip:** for anything more than a quick peek, save the dataset to a local file first (with `> file.json` / `> file.csv`) and run further analysis from disk. `apify datasets get-items` always streams over the network, so piping it straight into `jq` re-downloads the whole thing every iteration.
 
@@ -263,10 +267,10 @@ After the run completes, deliver a direct synthesized answer — not a data dump
 
 ## Gotchas
 
-- **The input schema is buried in the actor object.** `apify actors info ID --json` returns the full ~250 KB actor object with the schema as an escaped string — always pipe through `jq '.taggedBuilds.latest.build.inputSchema | fromjson'` to get the clean schema (see Step 2).
+- **`--input --json` is a trap.** It returns the full ~250 KB actor object, not the schema. Use `apify actors info ID --input` (no `--json`) for the clean schema; only dig into `.taggedBuilds.latest.build.inputSchema` if you specifically need it as JSON.
 - **The Primary actor has no `maxResults` field.** Its caps are mode-specific (`maxProductResults`, `maxReviewResults`, `maxSellerResults`, `maxSearchEngineResults`, `maxDeliveryResults`). Setting `maxResults` does nothing and the run scrapes unbounded.
 - **The Primary handles most intents via the right input mode** (URLs → `detailsUrls`/`listingUrls`; query → `keyword` or `searchEngineKeyword`), including competitor, search-intent, classifieds, automotive, real-estate, website-marketplace, and events. It genuinely **can't** do `tech-stack`, `seo-audit`, `store-enrichment`, `product-matching`, `ads-intelligence`, `content-discovery` (Pinterest), or `tiktok-shop` — route those straight to the Fallback.
 - **`apify actors call -i` expects valid JSON on one line.** For inputs with URL arrays or quotes, write a file and pass `-i @input.json` instead of inlining — shell quoting silently corrupts complex inputs.
 - **`datasets get-items` always streams over the network.** Save to a file once (`> file.json`), then run `jq` against the file — don't re-pipe the command into `jq` repeatedly or you re-download every time.
 - **`apify actors search --sort-by popularity` ignores relevance.** It returns the biggest-name scrapers regardless of your query (an "etsy" search surfaces Instagram/Google Maps Actors). For escalation discovery keep the default relevance sort and filter on `stats.totalUsers`/`actorReviewRating` instead.
-- **`marketplaces` values are full domain slugs**, e.g. `["www.amazon.com", "www.ebay.com"]` — not `"amazon"` or display names. Delivery mode is even narrower: `marketplacesDelivery` only accepts `["www.doordash.com", "www.instacart.com"]` (no UberEats — use the `e-commerce/ubereats-reviews-scraper` fallback for that). Always confirm accepted values from the input schema's `enum` before guessing.
+- **`marketplaces` values are full domain slugs**, e.g. `["www.amazon.com", "www.ebay.com"]` — not `"amazon"` or display names. Delivery mode is even narrower: `marketplacesDelivery` only accepts `["www.doordash.com", "www.instacart.com"]` (no UberEats — use the `e-commerce/ubereats-reviews-scraper` fallback for that). Always confirm accepted values from the `--input` schema's `enum` before guessing.
