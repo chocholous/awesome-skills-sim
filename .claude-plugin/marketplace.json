@@ -146,6 +146,33 @@
       "category": "data-extraction"
     },
     {
+      "name": "apify-doesaiknow-seo-suite",
+      "source": "./skills/apify-doesaiknow-seo-suite",
+      "skills": "./",
+      "description": "Get SEO and AI-search data with the doesaiknow Apify Actors — keyword search volume + CPC (Google AND Bing), AI keyword clustering / topical maps, a competitor's ranked keywords + keyword gap, backlinks and referring domains, AI brand visibility across ChatGPT/Perplexity/Gemini (AEO/GEO share of voice), and Amazon keyword volume + reverse-ASIN. Use when the user asks for keyword research, search volume or CPC, keyword difficulty/clustering, a topical map, competitor keywords, a keyword gap, backlinks or referring domains, link prospecting, \"answer engine optimization\" / \"generative engine optimization\", whether a brand is cited in ChatGPT/Perplexity/Gemini, Amazon (FBA) keyword research, or a reverse-ASIN lookup — especially when they want it programmatically without an Ahrefs / Semrush / Helium 10 subscription.",
+      "keywords": [
+        "seo",
+        "keyword research",
+        "search volume",
+        "cpc",
+        "keyword clustering",
+        "topical map",
+        "competitor keywords",
+        "keyword gap",
+        "backlinks",
+        "referring domains",
+        "ai visibility",
+        "aeo",
+        "geo",
+        "amazon keywords",
+        "reverse asin",
+        "ahrefs alternative",
+        "semrush alternative",
+        "helium 10 alternative"
+      ],
+      "category": "data-extraction"
+    },
+    {
       "name": "apify-easy-competitive-intelligence",
       "source": "./skills/apify-easy-competitive-intelligence",
       "skills": "./",
@@ -297,6 +324,25 @@
       "category": "data-extraction"
     },
     {
+      "name": "apify-kick-scraper",
+      "source": "./skills/apify-kick-scraper",
+      "skills": "./",
+      "description": "Research Kick.com creators, channels, categories, and live streams with the AI Tools Max Kick Data Scraper Actor on Apify. Use when discovering Kick streamers, comparing channel audiences, mapping categories, finding live creators by language or tag, exporting channel snapshots, or building creator and market-research datasets from Kick.",
+      "keywords": [
+        "kick",
+        "kick.com",
+        "streamers",
+        "creators",
+        "creator-discovery",
+        "market-research",
+        "live-streams",
+        "influencer-research",
+        "category-analysis",
+        "apify"
+      ],
+      "category": "data-extraction"
+    },
+    {
       "name": "apify-link-prospecting-outreach",
       "source": "./skills/apify-link-prospecting-outreach",
       "skills": "./",
@@ -313,6 +359,29 @@
         "unlinked-mentions",
         "competitor-links",
         "resource-pages"
+      ],
+      "category": "data-extraction"
+    },
+    {
+      "name": "apify-linkedin-intelligence",
+      "source": "./skills/apify-linkedin-intelligence",
+      "skills": "./",
+      "description": "Turn LinkedIn into a B2B go-to-market data source using Apify Actors across the three LinkedIn data pillars — company firmographics, people profiles, and job postings. Use for TAM sizing (count and size companies in a market), prospect / lead list building (find decision-makers by title, company, seniority, geo), headcount benchmarking (compare employee counts and growth across competitors), and hiring-signal selling (turn new job postings into buying signals and timed outreach). Trigger phrases include \"size my TAM on LinkedIn\", \"build a prospect list of <title> at <companies>\", \"find decision makers / ICP contacts\", \"how many employees does <company> have\", \"benchmark headcount vs competitors\", \"who is hiring for <role>\", \"hiring signals for sales\", \"LinkedIn company / people / jobs scraper\", or \"enrich these LinkedIn URLs\". Chains firmographics + people + jobs instead of a single scraper, and confirms input schemas before running because LinkedIn Actor inputs drift.",
+      "keywords": [
+        "linkedin",
+        "b2b",
+        "lead-generation",
+        "prospecting",
+        "tam-sizing",
+        "firmographics",
+        "headcount",
+        "hiring-signals",
+        "sales-intelligence",
+        "people-profiles",
+        "job-postings",
+        "icp",
+        "go-to-market",
+        "apollo-alternative"
       ],
       "category": "data-extraction"
     },
