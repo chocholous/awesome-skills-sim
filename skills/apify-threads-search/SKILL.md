@@ -3,6 +3,8 @@ name: apify-threads-search
 description: >-
   Search and verify newly collected public Meta Threads data with Apify. Use when a user asks to search Threads posts by keyword or hashtag, compare top and recent public results, collect public posts from known Threads accounts, or discover public Threads profiles by niche or local phrase. Do not use for reply trees, private or login-only content, publishing or account actions, non-Threads platforms, generic programming threads, hidden contact discovery, exhaustive coverage claims, or analysis that must use only an existing local file. Sentiment and themes are downstream analysis, not scraped fields.
 metadata:
+  category: data-extraction
+  keywords: "threads, meta-threads, threads-search, posts, profiles, keyword-search, public-data, dataset-verification"
   author: FuturizeRush
   author_url: https://github.com/FuturizeRush
 ---
