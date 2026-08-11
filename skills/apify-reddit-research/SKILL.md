@@ -3,6 +3,9 @@ name: apify-reddit-research
 description: Research discussions, sentiment, opinions, and trends on Reddit. Use when the user asks what Reddit thinks about a topic/brand/product/company, wants subreddit analysis, needs to find real conversations, monitor brand mentions, analyze customer sentiment, research trends, or gather Reddit data for competitive intelligence and market research. Supports keyword search, specific subreddits, user profiles, and post URLs.
 author: Jose Gabriel Rivera
 author_url: https://github.com/grivera82
+metadata:
+  category: data-extraction
+  keywords: "reddit, reddit-scraper, sentiment-analysis, brand-monitoring, subreddit, social-listening, market-research, competitor-analysis, trend-research, website-content-crawler"
 ---
 
 # Reddit Research
