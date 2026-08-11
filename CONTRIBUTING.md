@@ -19,6 +19,10 @@ Add your Apify skill to this list in under a minute.
 - **One skill per PR.** CI enforces this. Exception: maintainers can add a `maintainer` label.
 - **No unnecessary changes.** Edit only files inside your skill dir. Don't touch `.claude-plugin/marketplace.json`, `agents/AGENTS.md` or the skills table in `README.md` — all three are regenerated automatically after merge.
 - **Use Apify Actors only** — publicly available on the [Apify Store](https://apify.com/store).
+- **Disclose financial interest.** Affiliate/referral parameters on links (e.g. `?fpr=…`)
+  and routing to paid Actors you own are allowed, but the skill must say so — add a short
+  disclosure line next to the `author` credit (e.g. "Links use the author's Apify affiliate
+  code; routed Actors are built by the author."). CI warns on undisclosed referral params.
 
 ## Quality (recommended, not required)
 
