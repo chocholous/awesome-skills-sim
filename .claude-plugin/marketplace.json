@@ -407,6 +407,49 @@
       "category": "data-extraction"
     },
     {
+      "name": "apify-orchestrator-actor-development",
+      "source": "./skills/apify-orchestrator-actor-development",
+      "skills": "./",
+      "description": "Build TypeScript Apify orchestrator Actors — coordinate a sequence of sub-Actors (optionally with an LLM step) using the apify-orchestrator library. Use when creating a new orchestrator Actor, chaining Apify Actors together, adding an OpenRouter LLM step between Actors, or scaffolding parent-Actor workflows that call other Actors.",
+      "keywords": [
+        "orchestrator",
+        "orchestration",
+        "apify-orchestrator",
+        "typescript",
+        "actor-development",
+        "sub-actors",
+        "workflow",
+        "pipeline",
+        "chain",
+        "parent-actor",
+        "openrouter",
+        "llm",
+        "mcp",
+        "cost-tracking",
+        "maxtotalchargeusd"
+      ],
+      "category": "data-extraction"
+    },
+    {
+      "name": "apify-page-change-intelligence",
+      "source": "./skills/apify-page-change-intelligence",
+      "skills": "./",
+      "description": "Monitor known public web pages for meaningful content changes with persistent snapshots and structured diffs. Use when the user asks to \"monitor a website\", \"track a pricing page\", \"watch competitor pages\", \"detect page changes\", \"track recruitment or job page changes\", \"monitor FDD or filing pages\", \"compare a page with its previous version\", or create a recurring known-URL watchlist. Returns hashes, added and removed text, categorized business signals, and explicit baseline, unchanged, changed, blocked, or failed status. Requires an Apify account and CLI or MCP access.",
+      "keywords": [
+        "website-monitoring",
+        "change-detection",
+        "page-diff",
+        "pricing-monitoring",
+        "competitor-monitoring",
+        "recruitment",
+        "franchise",
+        "fdd",
+        "filing-monitoring",
+        "persistent-snapshots"
+      ],
+      "category": "data-extraction"
+    },
+    {
       "name": "apify-reddit-research",
       "source": "./skills/apify-reddit-research",
       "skills": "./",
