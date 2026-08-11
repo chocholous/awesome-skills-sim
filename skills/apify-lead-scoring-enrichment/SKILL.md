@@ -4,20 +4,7 @@ description: Score and enrich a CSV of B2B leads using Apify Actors. Takes a CSV
 author: Fabian Maume
 author_url: https://github.com/fmaume
 metadata:
-  keywords:
-    - lead-scoring
-    - lead-enrichment
-    - outreach
-    - cold-email
-    - personalization
-    - tech-stack
-    - builtwith
-    - email-finder
-    - copywriter-discovery
-    - guest-post
-    - prospecting
-    - b2b
-    - csv-workflow
+  keywords: "lead-scoring, lead-enrichment, outreach, cold-email, personalization, tech-stack, builtwith, email-finder, copywriter-discovery, guest-post, prospecting, b2b, csv-workflow"
 ---
 
 # Lead Scoring & Enrichment
