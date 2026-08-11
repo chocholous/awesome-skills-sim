@@ -6,6 +6,7 @@ author_url: https://github.com/johnisanerd
 license: MIT
 metadata:
   version: "1.0"
+  keywords: "job search api, job postings api, job listings feed, google jobs scraper, job alerts, job board, recruiting, mcp"
 ---
 
 # Job Search API: A Live Job Feed From Google Jobs
