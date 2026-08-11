@@ -4,24 +4,7 @@ description: Monitor and extract U.S. SEC and global financial-regulator filings
 author: NexGenData
 author_url: https://apify.com/nexgendata
 metadata:
-  keywords:
-    - sec
-    - edgar
-    - regulatory
-    - filings
-    - insider-trading
-    - form-4
-    - 8-k
-    - 13f
-    - 13d
-    - form-d
-    - finra
-    - enforcement
-    - litigation
-    - compliance
-    - due-diligence
-    - mutual-fund
-    - global-regulators
+  keywords: "sec, edgar, regulatory, filings, insider-trading, form-4, 8-k, 13f, 13d, form-d, finra, enforcement, litigation, compliance, due-diligence, mutual-fund, global-regulators"
 ---
 
 # SEC & Regulatory Intelligence
