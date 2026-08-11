@@ -382,7 +382,8 @@ def validate_skills(skills: list[dict]) -> list[str]:
         if not skill["metadata"].get("keywords", "").strip():
             errors.append(
                 f"skills/{folder}/SKILL.md: missing 'metadata.keywords' — "
-                "add metadata.keywords to frontmatter"
+                "add a 'metadata:' block to the frontmatter with keywords as "
+                'a comma-separated string, e.g. keywords: "kw-one, kw-two"'
             )
 
     seen: dict[str, str] = {p["name"]: f"NESTED_PLUGINS entry '{p['name']}'" for p in NESTED_PLUGINS}
