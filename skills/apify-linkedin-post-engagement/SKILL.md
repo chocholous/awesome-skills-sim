@@ -6,6 +6,7 @@ author_url: https://github.com/johnisanerd
 license: MIT
 metadata:
   version: "1.0"
+  keywords: "apify, linkedin, linkedin-posts, engagement, analytics, social-media, reactions, comments, mcp, claude"
 ---
 
 # Analyze LinkedIn Post Engagement
