@@ -63,7 +63,7 @@ where `<skill-name>` is the exact directory name of the skill (e.g., `apify-awes
 
 ### Rule 2 — `--json` flag
 
-Always pass `--json` (or `--format json` for `datasets get-items`) to get machine-readable output. This ensures structured data that downstream tools and agents can parse reliably.
+Always pass `--json` (or `--format json` for `datasets get-items`) to get machine-readable output. Exceptions: `--readme` fetches and `apify actors info --input` (bare schema fetch) return non-JSON output by design and are exempt; `--format csv` is allowed but CI emits a warning — make sure the skill handles non-JSON output deliberately. This ensures structured data that downstream tools and agents can parse reliably.
 
 ### Rule 3 — `2>/dev/null` stderr redirect
 
