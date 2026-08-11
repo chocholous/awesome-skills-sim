@@ -12,7 +12,7 @@ LinkedIn Actor input field names drift and differ between Actors.
 | People | Enrich known profile URLs | `harvestapi/linkedin-profile-scraper` | community | Full profile: name, headline, current title/company, location, experience, education, skills. Input is a list of `linkedin.com/in/<handle>` URLs. |
 | People | Search/discover by ICP (no URLs yet) | `harvestapi/linkedin-profile-search` | community | **The prospecting engine.** Filter by title, company, location, keywords. Confirm exact filter field names (e.g. `jobTitles`, `currentCompanies`, `locations`) and the result cap (`maxItems`). |
 | Jobs | Postings from a jobs search URL | `curious_coder/linkedin-jobs-scraper` | community | Input `urls` = full `linkedin.com/jobs/search/?...` URLs (NOT keywords). `count` min is 10. `scrapeCompany: true` adds firmographics (`companyEmployeesCount`, `companyWebsite`, `companyLinkedinUrl`). |
-| Jobs | Postings, dataset output, pair w/ company set | `harvestapi/linkedin-job` | community | Alternative jobs feed; confirm input shape in schema. |
+| Jobs | Postings, dataset output, pair w/ company set | `fantastic-jobs/advanced-linkedin-job-search-api` | community | Alternative jobs feed; confirm input shape in schema. |
 | Resolver | Find exact slug / profile URL | `apify/google-search-scraper` | apify | `"<company> site:linkedin.com/company"` → slug; `"<title> <company> site:linkedin.com/in"` → people URLs. Take the first matching `organicResults[].url`. |
 
 ## Field cheat-sheet (confirm against live schema)

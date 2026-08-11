@@ -1,6 +1,23 @@
 ---
 name: apify-linkedin-intelligence
 description: Turn LinkedIn into a B2B go-to-market data source using Apify Actors across the three LinkedIn data pillars — company firmographics, people profiles, and job postings. Use for TAM sizing (count and size companies in a market), prospect / lead list building (find decision-makers by title, company, seniority, geo), headcount benchmarking (compare employee counts and growth across competitors), and hiring-signal selling (turn new job postings into buying signals and timed outreach). Trigger phrases include "size my TAM on LinkedIn", "build a prospect list of <title> at <companies>", "find decision makers / ICP contacts", "how many employees does <company> have", "benchmark headcount vs competitors", "who is hiring for <role>", "hiring signals for sales", "LinkedIn company / people / jobs scraper", or "enrich these LinkedIn URLs". Chains firmographics + people + jobs instead of a single scraper, and confirms input schemas before running because LinkedIn Actor inputs drift.
+metadata:
+  category: data-extraction
+  keywords:
+    - linkedin
+    - b2b
+    - lead-generation
+    - prospecting
+    - tam-sizing
+    - firmographics
+    - headcount
+    - hiring-signals
+    - sales-intelligence
+    - people-profiles
+    - job-postings
+    - icp
+    - go-to-market
+    - apollo-alternative
 author: Yoghesh D
 author_url: https://github.com/yogeshd
 ---
@@ -63,7 +80,7 @@ LinkedIn is a protected platform — **never** use a generic crawler (`website-c
 | People profiles (enrich URLs) | `harvestapi/linkedin-profile-scraper` | community | Full profile from a profile URL: title, company, location, experience, headline. |
 | People search (build lists) | `harvestapi/linkedin-profile-search` | community | Find people by keywords/title/company/location without knowing URLs — the prospecting engine. |
 | Job postings | `curious_coder/linkedin-jobs-scraper` | community | Jobs from a LinkedIn jobs **search URL** (not keywords). `count` min is 10. Returns company firmographics too (`companyEmployeesCount`, `companyWebsite`). |
-| Job postings (alt) | `harvestapi/linkedin-job` | community | Jobs feed with dataset output; pair with company search. |
+| Job postings (alt) | `fantastic-jobs/advanced-linkedin-job-search-api` | community | Jobs feed with dataset output; pair with company search. |
 | Resolve slugs / profile URLs | `apify/google-search-scraper` | apify | Discover the exact `linkedin.com/company/<slug>` or `linkedin.com/in/<handle>` before scraping. |
 
 `Tier` = `apify` (Apify-maintained, prefer) or `community` (third-party). These are starting points — run `apify actors search "linkedin" --json --limit 20` to find current alternatives, and always confirm the schema (step 3). See [references/actor-index.md](references/actor-index.md) for the full table and field notes.
