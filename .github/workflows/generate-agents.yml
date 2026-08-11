@@ -2,7 +2,7 @@ name: Validate skill PRs and regenerate catalog
 
 on:
   pull_request:
-    types: [opened, edited, synchronize, reopened]
+    types: [opened, edited, synchronize, reopened, labeled, unlabeled]
   push:
     branches: [main]
     paths:
@@ -26,7 +26,16 @@ jobs:
       - name: Check PR scope (one skill per PR, no out-of-bounds files)
         env:
           BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
         run: |
+          MAINTAINER=0
+          case ",$PR_LABELS," in
+            *,maintainer,*)
+              MAINTAINER=1
+              echo "::notice::maintainer label present — multi-skill/infra PR allowed"
+              ;;
+          esac
+
           CHANGED=$(git diff --name-only --diff-filter=ACMRT "origin/$BASE_REF...HEAD")
           if [ -z "$CHANGED" ]; then
             echo "No file changes detected."
@@ -48,8 +57,8 @@ jobs:
 
           FAIL=0
 
-          if [ "$N_SKILLS" -gt 1 ]; then
-            echo "::error::PR touches $N_SKILLS skills; one skill per PR."
+          if [ "$MAINTAINER" -eq 0 ] && [ "$N_SKILLS" -gt 1 ]; then
+            echo "::error::PR touches $N_SKILLS skills; one skill per PR (or ask a maintainer for the 'maintainer' label)."
             echo "$SKILL_DIRS" | sed 's/^/  - /'
             FAIL=1
           fi
@@ -61,8 +70,9 @@ jobs:
           fi
 
           # Skill PRs must not touch generated files — the bot regenerates them
-          # after merge. Infra PRs (no skills/ changes) may touch them.
-          if [ -n "$SKILL_DIRS" ]; then
+          # after merge. Infra PRs (no skills/ changes) and maintainer-labeled
+          # PRs may touch them.
+          if [ "$MAINTAINER" -eq 0 ] && [ -n "$SKILL_DIRS" ]; then
             GENERATED_TOUCHED=$(echo "$CHANGED" | grep -E '^(\.claude-plugin/marketplace\.json|agents/AGENTS\.md)$' || true)
 
             if echo "$CHANGED" | grep -qx 'README.md'; then
