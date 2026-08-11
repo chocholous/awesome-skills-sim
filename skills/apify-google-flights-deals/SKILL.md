@@ -6,6 +6,8 @@ author_url: https://github.com/johnisanerd
 license: MIT
 metadata:
   version: "1.0"
+  category: data-extraction
+  keywords: "apify, flights, travel, deals, mcp"
 ---
 
 # Google Flights Deals, With Real Bargains Separated From Cheap Short-Hauls
@@ -20,6 +22,8 @@ One airport code in, thirty destinations out, each flagged for whether it actual
 - They need the cheapest destinations filtered to nonstop, business class, or a weekend-length trip.
 
 Not for: pricing a route you have already chosen (use `johnvc/Google-Flights-Data-Scraper-Flight-and-Price-Search` and the apify-google-flights-api skill) or building a fare history over time (use the companion apify-google-flights-tracking skill). See `references/actor-index.md`.
+
+> Links in this skill use the author's Apify affiliate code (`fpr` parameter); the routed Actors are built by the author.
 
 ## Why the baseline matters
 
