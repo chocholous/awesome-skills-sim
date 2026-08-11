@@ -3,6 +3,25 @@ name: apify-sec-regulatory-intelligence
 description: Monitor and extract U.S. SEC and global financial-regulator filings via Apify Actors. Use to track insider trades (Form 4), material corporate events (8-K), institutional 13F holdings and changes, activist stakes (13D/G), private placements (Form D / Reg A+), late-filing warnings (Form NT), fund holdings & proxy votes (N-PORT / N-PX), investment advisers (Form ADV), restricted-stock pre-sales (Form 144), SEC litigation & enforcement, FINRA BrokerCheck, or enforcement from global regulators (Swiss FINMA, Singapore MAS, Hong Kong SFC, India SEBI, Australia ASIC, Japan EDINET, China A-share, UK RNS). Triggers - "track insider buying", "who's buying/selling [ticker]", "recent 8-K events", "13F changes for [fund]", "activist 13D filings", "new Form D raises", "SEC enforcement this year", "check a broker on FINRA", "companies that filed late", "regulatory enforcement in [country]", "SEC filings for [company]". Factual public filing data for research - not financial, legal, or investment advice.
 author: NexGenData
 author_url: https://apify.com/nexgendata
+metadata:
+  keywords:
+    - sec
+    - edgar
+    - regulatory
+    - filings
+    - insider-trading
+    - form-4
+    - 8-k
+    - 13f
+    - 13d
+    - form-d
+    - finra
+    - enforcement
+    - litigation
+    - compliance
+    - due-diligence
+    - mutual-fund
+    - global-regulators
 ---
 
 # SEC & Regulatory Intelligence
