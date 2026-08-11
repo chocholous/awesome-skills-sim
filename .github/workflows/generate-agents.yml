@@ -110,33 +110,45 @@ jobs:
             exit 1
           fi
 
-      - name: Lint telemetry user-agent
-        run: bash scripts/lint_telemetry.sh
-
-      - name: Lint references
+      # Both lints below run only on the skill dirs changed in the PR (same
+      # scope logic as the scope check above). Pre-existing findings on main
+      # are deliberately kept as exhibits (decision D2), so a full-repo run
+      # would fail every future PR. Full runs for local/maintainer use:
+      #   bash scripts/lint_telemetry.sh
+      #   uv run scripts/lint_references.py --check-actors
+      - name: Determine changed skill dirs
+        id: changed
         env:
           BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
-          # Only skills changed in this PR are linted (same scope logic as the
-          # scope check above). Pre-existing findings on main are deliberately
-          # kept as exhibits (decision D2), so a full-repo run would fail every
-          # future PR. Full run for local/maintainer use:
-          #   uv run scripts/lint_references.py --check-actors
           CHANGED=$(git diff --name-only --diff-filter=ACMRT "origin/$BASE_REF...HEAD")
           SKILL_DIRS=$(echo "$CHANGED" | grep -oE '^skills/apify-[^/]+' | sort -u)
           N_SKILLS=$(echo "$SKILL_DIRS" | grep -c . || true)
+          echo "n_skills=$N_SKILLS" >> "$GITHUB_OUTPUT"
+          echo "skill_dirs=$(echo "$SKILL_DIRS" | tr '\n' ' ')" >> "$GITHUB_OUTPUT"
+          echo "Changed skill dirs ($N_SKILLS):"
+          echo "$SKILL_DIRS" | sed 's/^/  - /'
 
+      - name: Lint telemetry (changed skills)
+        run: |
+          if [ "${{ steps.changed.outputs.n_skills }}" -eq 0 ]; then
+            echo "No skill directories changed — skipping telemetry lint."
+            exit 0
+          fi
+          bash scripts/lint_telemetry.sh ${{ steps.changed.outputs.skill_dirs }}
+
+      - name: Lint references (changed skills)
+        run: |
+          N_SKILLS="${{ steps.changed.outputs.n_skills }}"
           if [ "$N_SKILLS" -eq 0 ]; then
             echo "No skill directories changed — skipping reference lint."
             exit 0
           fi
-
-          # shellcheck disable=SC2086 — word-splitting SKILL_DIRS is intended
           if [ "$N_SKILLS" -eq 1 ]; then
             # Single-skill PR: offline checks + online actor existence check.
-            uv run scripts/lint_references.py $SKILL_DIRS --check-actors $SKILL_DIRS
+            uv run scripts/lint_references.py ${{ steps.changed.outputs.skill_dirs }} --check-actors ${{ steps.changed.outputs.skill_dirs }}
           else
-            uv run scripts/lint_references.py $SKILL_DIRS
+            uv run scripts/lint_references.py ${{ steps.changed.outputs.skill_dirs }}
           fi
 
       - name: Validate skills and run a trial generation

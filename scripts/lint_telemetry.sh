@@ -10,6 +10,10 @@
 # Only lines INSIDE fenced code blocks (``` ... ```) are checked.
 # Prose mentions of apify commands are ignored.
 #
+# Usage:
+#   bash scripts/lint_telemetry.sh                       # all skills
+#   bash scripts/lint_telemetry.sh skills/apify-foo ...  # only these dirs/files
+#
 # Exit 0 if all checks pass, exit 1 if any violation is found.
 # Requires bash 4+ (available on all GitHub Actions runners).
 
@@ -28,11 +32,28 @@ CLI_PATTERNS=(
   "apify run"
 )
 
-# Find all SKILL.md files under skills/
+# Find SKILL.md files: all under skills/ by default, or only under the
+# dirs/files passed as arguments (used by CI to lint just the skills a PR
+# changes — pre-existing findings on main are kept as exhibits, decision D2).
 SKILL_FILES=()
-while IFS= read -r f; do
-  SKILL_FILES+=("$f")
-done < <(find skills -name "SKILL.md" | sort)
+if [ "$#" -gt 0 ]; then
+  for arg in "$@"; do
+    if [ -f "$arg" ]; then
+      SKILL_FILES+=("$arg")
+    elif [ -d "$arg" ]; then
+      while IFS= read -r f; do
+        SKILL_FILES+=("$f")
+      done < <(find "$arg" -name "SKILL.md" | sort)
+    else
+      echo "lint: $arg: not a file or directory" >&2
+      exit 2
+    fi
+  done
+else
+  while IFS= read -r f; do
+    SKILL_FILES+=("$f")
+  done < <(find skills -name "SKILL.md" | sort)
+fi
 
 if [ ${#SKILL_FILES[@]} -eq 0 ]; then
   echo "lint: no SKILL.md files found under skills/"
