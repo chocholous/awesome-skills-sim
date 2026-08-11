@@ -5,6 +5,8 @@ author: John Cole
 author_url: https://github.com/johnisanerd
 license: MIT
 metadata:
+  category: data-extraction
+  keywords: "apify, youtube, transcripts, llm, training-data, rag, dataset"
   version: "1.0"
 ---
 
