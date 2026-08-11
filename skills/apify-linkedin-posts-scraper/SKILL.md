@@ -5,6 +5,8 @@ author: John Cole
 author_url: https://github.com/johnisanerd
 license: MIT
 metadata:
+  category: data-extraction
+  keywords: "apify, linkedin, linkedin-posts, posts, scraper, json, social-media, content, mcp, claude"
   version: "1.0"
 ---
 
