@@ -65,6 +65,8 @@ Always pass `--json` (or `--format json` for `datasets get-items`) to get machin
 
 Always append `2>/dev/null` to suppress CLI progress messages and spinners. These messages are written to stderr and break JSON parsers that consume the combined output stream.
 
+**Exception — `--readme`:** commands that fetch an Actor README (e.g. `apify actors info "<actor-id>" --readme`) return markdown, not JSON, so Rules 2 and 3 do not apply to them. Rule 1 (`--user-agent`) still does.
+
 ### Example
 
 ```bash
@@ -74,8 +76,9 @@ apify actors call apify/web-scraper \
   --json 2>/dev/null
 ```
 
-CI checks these rules automatically via `scripts/lint_telemetry.sh`. Run it locally before opening a PR:
+CI checks these rules automatically via `scripts/lint_telemetry.sh`, and skill references (paths, Apify Store actors, URLs) via `scripts/lint_references.py` — both run on the skills your PR changes. Run them locally before opening a PR:
 
 ```bash
-bash scripts/lint_telemetry.sh
+bash scripts/lint_telemetry.sh skills/apify-<name>
+uv run scripts/lint_references.py skills/apify-<name> --check-actors skills/apify-<name>
 ```
