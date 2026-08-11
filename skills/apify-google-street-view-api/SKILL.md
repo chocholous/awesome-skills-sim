@@ -6,6 +6,7 @@ author_url: https://github.com/johnisanerd
 license: MIT
 metadata:
   version: "1.0"
+  keywords: "google street view api, street view images, 360 panoramas, google maps photos, business imagery, site survey photos"
 ---
 
 # Street View and 360 Panoramas, Addressed by Place Name
