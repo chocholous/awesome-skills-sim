@@ -4,6 +4,9 @@ author: Wilbur Suero
 author_url: https://github.com/wilburhimself
 description: >-
   Discover and qualify B2B prospects by their tech stack. Chains Google Search signal queries to find companies using specific technologies, contact-info scraping to extract decision-maker emails and phones, and LinkedIn company enrichment to add firmographic data (size, industry, headcount). Use when user asks to find companies using a specific framework or tool, build a prospect list by technology, identify companies by language or framework, find companies integrating AI into their products, locate devtools customers, qualify engineering leads by stack, or wants a list of companies to reach out to based on what they're built on.
+metadata:
+  category: data-extraction
+  keywords: "tech stack prospecting, b2b lead generation, prospect list, google search signals, contact scraping, email finder, linkedin company enrichment, firmographics, sales leads"
 ---
 
 # Tech Stack Prospecting
@@ -23,7 +26,7 @@ Discover companies by what they're built on, extract contact information from th
 1. **Clarify the target.** Ask the user for their primary technology signal (e.g., "Ruby on Rails"), a secondary qualifier (e.g., "hiring AI engineers", "uses OpenAI"), geography, and desired output format (quick preview, CSV, or JSON).
 2. **Discover companies via search signals.** Build Google Search queries that surface companies *using* the stack — job postings, engineering blogs, GitHub READMEs — and run `apify/google-search-scraper`. Extract unique root domains from results; discard job boards, news sites, and directories.
 3. **Extract contact information.** Feed the domain list into `vdrmota/contact-info-scraper`, crawling `/about`, `/contact`, and `/team` pages at depth 2. Capture emails, phones, and LinkedIn company URLs.
-4. **Enrich with firmographics.** Pass LinkedIn company URLs from step 3 into `apify/linkedin-companies-scraper` to get company name, industry, headcount, and headquarters.
+4. **Enrich with firmographics.** Pass LinkedIn company URLs from step 3 into `harvestapi/linkedin-company` to get company name, industry, headcount, and headquarters.
 5. **Merge and deliver.** Join the three datasets on domain. Report count, file location, and top prospects. Warn the user before running enrichment on more than 100 companies — costs scale linearly.
 
 For a worked 4-step workflow, see [apify/agent-skills ultimate-scraper](https://github.com/apify/agent-skills/blob/main/skills/apify-ultimate-scraper/SKILL.md).
@@ -34,7 +37,7 @@ For a worked 4-step workflow, see [apify/agent-skills ultimate-scraper](https://
 |-----------|----------|------|----------|
 | Discover companies via tech/hiring signal queries | `apify/google-search-scraper` | apify | Surfacing company domains from job postings, engineering blogs, GitHub READMEs |
 | Extract emails, phones, and social links from company sites | `vdrmota/contact-info-scraper` | community | Crawling `/about`, `/contact`, `/team` pages for direct contact info |
-| Add company size, industry, and headcount | `apify/linkedin-companies-scraper` | apify | Firmographic enrichment from LinkedIn company pages |
+| Add company size, industry, and headcount | `harvestapi/linkedin-company` | community | Firmographic enrichment from LinkedIn company pages |
 
 `Tier` = `apify` (Apify-maintained, prefer) or `community` (third-party).
 
@@ -60,10 +63,10 @@ Run 3–5 queries per stack signal. 25–50 results per query is a safe default.
 | `emails` | `vdrmota/contact-info-scraper` |
 | `phones` | `vdrmota/contact-info-scraper` |
 | `linkedin_url` | `vdrmota/contact-info-scraper` |
-| `company_name` | `apify/linkedin-companies-scraper` |
-| `industry` | `apify/linkedin-companies-scraper` |
-| `employee_count` | `apify/linkedin-companies-scraper` |
-| `headquarters` | `apify/linkedin-companies-scraper` |
+| `company_name` | `harvestapi/linkedin-company` |
+| `industry` | `harvestapi/linkedin-company` |
+| `employee_count` | `harvestapi/linkedin-company` |
+| `headquarters` | `harvestapi/linkedin-company` |
 
 ## Calling Actors — choose your interface
 
@@ -87,7 +90,8 @@ Works in any shell-capable agent. Three flags on every call:
 Other useful commands:
 
     # Search Actors
-    apify actors search "KEYWORDS" --json --limit 10 2>/dev/null
+    apify actors search "KEYWORDS" --json --limit 10 \
+      --user-agent apify-awesome-skills/apify-tech-stack-prospecting 2>/dev/null
 
     # Fetch Actor schema
     apify actors info "ACTOR_ID" --input --json \

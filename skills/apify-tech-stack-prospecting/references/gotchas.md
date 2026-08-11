@@ -10,9 +10,9 @@ All three Actors use `PAY_PER_EVENT` pricing. Confirm before running any stage t
 |-------|-------|-------------|-------------|----------------|
 | Discovery | `apify/google-search-scraper` | per result page | 5 queries × 50 results = ~3 pages each ≈ 15 page-loads | >50 queries |
 | Contact | `vdrmota/contact-info-scraper` | per page crawled | 100 domains × 20 pages/domain = 2 000 pages | >100 domains |
-| Enrichment | `apify/linkedin-companies-scraper` | per company scraped | 1 unit per company URL | >100 companies |
+| Enrichment | `harvestapi/linkedin-company` | per company scraped | 1 unit per company URL | >100 companies |
 
-Check live rates before quoting: `apify actors info "ACTOR_ID" --json 2>/dev/null` → `pricingInfo` field.
+Check live rates before quoting: `apify actors info "ACTOR_ID" --json --user-agent apify-awesome-skills/apify-tech-stack-prospecting 2>/dev/null` → `pricingInfo` field.
 
 ### Confirmation thresholds
 
@@ -30,7 +30,7 @@ Check live rates before quoting: `apify actors info "ACTOR_ID" --json 2>/dev/nul
 | Contact scraper returns 0 emails for a domain | Company uses contact forms, Cloudflare, or auth-gated pages | Use the `linkedin_url` from the same run for manual or MCP-based outreach |
 | LinkedIn scraper rate-limited or returns 429 | Too many company URLs in one batch; LinkedIn session throttle | Reduce batch to 20–30 companies; wait 10–15 min between batches |
 | `Actor not found` error | Actor ID typo or the community actor was removed | IDs are case-sensitive; verify with `apify actors search` before retrying |
-| Dataset missing after run | Run did not reach `SUCCEEDED` status | Check run status: `apify runs info RUN_ID --json 2>/dev/null`; inspect logs in console |
+| Dataset missing after run | Run did not reach `SUCCEEDED` status | Check run status: `apify runs info RUN_ID --json --user-agent apify-awesome-skills/apify-tech-stack-prospecting 2>/dev/null`; inspect logs in console |
 
 ## Actor-specific notes
 
@@ -48,7 +48,7 @@ Check live rates before quoting: `apify actors info "ACTOR_ID" --json 2>/dev/nul
 - The scraper extracts emails from `mailto:` links and plain-text patterns. Obfuscated emails (e.g. `name [at] company [dot] com`) are not extracted.
 - Social profiles (`linkedin_url`) are extracted from `<a href="https://linkedin.com/company/...">` links; these are the input for the enrichment stage.
 
-### `apify/linkedin-companies-scraper`
+### `harvestapi/linkedin-company`
 
 - Input must be **company page URLs** (`linkedin.com/company/...`), not person profile URLs (`linkedin.com/in/...`). Passing profile URLs silently returns no data.
 - LinkedIn blocks scrapers aggressively. If >5 consecutive companies return empty results, stop and retry after 15–30 minutes.
