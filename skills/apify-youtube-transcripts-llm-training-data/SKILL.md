@@ -6,6 +6,7 @@ author_url: https://github.com/johnisanerd
 license: MIT
 metadata:
   version: "1.0"
+  keywords: "apify, youtube, transcripts, llm, training-data, rag, dataset"
 ---
 
 # YouTube Transcripts as LLM Training Data
