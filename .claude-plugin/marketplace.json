@@ -320,6 +320,48 @@
       "category": "data-extraction"
     },
     {
+      "name": "apify-google-flights-deals",
+      "source": "./skills/apify-google-flights-deals",
+      "skills": "./",
+      "description": "Find genuine google flights deals from a home airport with the Apify Google Flights Deals API Actor (johnvc/google-flights-deals-api). Give one IATA code and get the thirty cheapest destinations back as rows, each carrying the fare, what that route typically costs, the saving between them, and an is_below_typical flag. That flag is the point, because a cheap fare and a good deal are different things, and most of a cheapest-first list is short-haul that is cheap because it is close, not because the price is unusual. There is no arrival airport, the feed answers where can I go cheaply rather than what does this route cost. Filter by stops, cabin, budget, or trip length. Use when the user wants flight deals, cheap flights from an airport, fare drop discovery, or destination inspiration priced against a baseline. Pay per deal returned, MCP-ready for Claude and other AI agents.",
+      "keywords": [
+        "apify",
+        "flights",
+        "travel",
+        "deals",
+        "mcp"
+      ],
+      "category": "data-extraction"
+    },
+    {
+      "name": "apify-google-flights-tracking",
+      "source": "./skills/apify-google-flights-tracking",
+      "skills": "./",
+      "description": "Build your own fare history for google flights tracking with the Apify Google Flights Deals API Actor (johnvc/google-flights-deals-api). Run it on a schedule against one or several home airports and every row arrives with the fare, what that route typically costs, the gap between them, exact dates, airline and a booking link, so successive runs accumulate into a price record you own and can query. This is the data layer under a price-alert product, not the alerting itself. The Actor takes a snapshot and keeps no history and sends no notifications, so the repeated observation is yours to store and the notify rule is yours to write, and a baseline in every row means that rule can be below typical instead of a threshold you guessed. Use when the user wants flight price tracking, airfare monitoring, fare data with a reference price, or the source feed behind flight price alerts. Pay per deal returned, MCP-ready for Claude and other AI agents.",
+      "keywords": [
+        "apify",
+        "flights",
+        "price-tracking",
+        "travel",
+        "mcp"
+      ],
+      "category": "data-extraction"
+    },
+    {
+      "name": "apify-google-street-view-api",
+      "source": "./skills/apify-google-street-view-api",
+      "skills": "./",
+      "description": "Pull Street View and 360 panoramas for a place by name with a google maps street view api built on the Apify Google Maps Photos API Actor (johnvc/google-maps-photos-api). The official Street View Static endpoint wants a latitude, longitude and heading and returns one rendered tile; this returns a listing of the panoramas actually attached to a business, addressed by its name or its Google Maps URL, as rows with the full-size image url, a thumbnail, gallery position and a stable photo id. Set the category to street_view for panoramas or videos for clips. Use when the user wants a street view api, google street view images for a business, 360 photos of a location, exterior or frontage imagery for site surveys, real estate, insurance or field-service work, without geocoding first. Pay per image returned, MCP-ready for Claude and other AI agents.",
+      "keywords": [
+        "apify",
+        "street-view",
+        "google-maps",
+        "panorama",
+        "mcp"
+      ],
+      "category": "data-extraction"
+    },
+    {
       "name": "apify-hiring-signals",
       "source": "./skills/apify-hiring-signals",
       "skills": "./",
