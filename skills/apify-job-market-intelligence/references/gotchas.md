@@ -19,7 +19,7 @@
 
 ## Glassdoor module
 
-- `glassdoor-reviews` needs the **Glassdoor company URL** (`/Reviews/<Company>-Reviews-E<id>.htm`), not just a name — resolve it first. Skip the module if you can't resolve the URL for a given employer rather than guessing.
+- `getdataforme/glassdoor-reviews-scraper` takes a **company name**, not a URL — input is just `Keyword` (string) and `ItemLimit` (integer, default 50). Run one call per company using the name from Step 2; there's no URL to resolve, so nothing to skip.
 - Reviews are self-selected and skew negative/positive at the extremes; use them as a directional reputation signal, not a verdict.
 
 ## Empty results
