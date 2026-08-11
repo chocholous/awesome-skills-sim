@@ -11,13 +11,13 @@ Add your Apify skill to this list in under a minute.
    - `description: ...` (≤ 1024 chars; include trigger phrases a user would say)
    - `author`, `author_url` (optional)
    - Replace every `REPLACE` placeholder in the body
-4. **Add** one entry to `.claude-plugin/marketplace.json` (see existing entries)
+4. **Add** a `metadata:` block to your SKILL.md frontmatter — `keywords: "kw-one, kw-two, ..."` (required) and optionally `category:` (defaults to `data-extraction`). Do **not** touch `.claude-plugin/marketplace.json` — it is generated from frontmatter after merge.
 5. **Open a PR** — CI validates, a maintainer reviews and merges
 
 ## Rules
 
 - **One skill per PR.** CI enforces this. Exception: maintainers can add a `maintainer` label.
-- **No unnecessary changes.** Edit only files inside your skill dir and `.claude-plugin/marketplace.json`. Don't touch `agents/AGENTS.md` or the skills table in `README.md` — both are regenerated automatically.
+- **No unnecessary changes.** Edit only files inside your skill dir. Don't touch `.claude-plugin/marketplace.json`, `agents/AGENTS.md` or the skills table in `README.md` — all three are regenerated automatically after merge.
 - **Use Apify Actors only** — publicly available on the [Apify Store](https://apify.com/store).
 
 ## Quality (recommended, not required)
