@@ -309,6 +309,32 @@
       "category": "data-extraction"
     },
     {
+      "name": "apify-sec-regulatory-intelligence",
+      "source": "./skills/apify-sec-regulatory-intelligence",
+      "skills": "./",
+      "description": "Monitor and extract U.S. SEC and global financial-regulator filings via Apify Actors. Use to track insider trades (Form 4), material corporate events (8-K), institutional 13F holdings and changes, activist stakes (13D/G), private placements (Form D / Reg A+), late-filing warnings (Form NT), fund holdings & proxy votes (N-PORT / N-PX), investment advisers (Form ADV), restricted-stock pre-sales (Form 144), SEC litigation & enforcement, FINRA BrokerCheck, or enforcement from global regulators (Swiss FINMA, Singapore MAS, Hong Kong SFC, India SEBI, Australia ASIC, Japan EDINET, China A-share, UK RNS). Triggers - \"track insider buying\", \"who's buying/selling [ticker]\", \"recent 8-K events\", \"13F changes for [fund]\", \"activist 13D filings\", \"new Form D raises\", \"SEC enforcement this year\", \"check a broker on FINRA\", \"companies that filed late\", \"regulatory enforcement in [country]\", \"SEC filings for [company]\". Factual public filing data for research - not financial, legal, or investment advice.",
+      "keywords": [
+        "sec",
+        "edgar",
+        "regulatory",
+        "filings",
+        "insider-trading",
+        "form-4",
+        "8-k",
+        "13f",
+        "13d",
+        "form-d",
+        "finra",
+        "enforcement",
+        "litigation",
+        "compliance",
+        "due-diligence",
+        "mutual-fund",
+        "global-regulators"
+      ],
+      "category": "data-extraction"
+    },
+    {
       "name": "apify-sim-bravo",
       "source": "./skills/apify-sim-bravo",
       "skills": "./",
@@ -317,6 +343,25 @@
         "simulation",
         "parallel-merge",
         "bravo"
+      ],
+      "category": "data-extraction"
+    },
+    {
+      "name": "apify-social-listening",
+      "source": "./skills/apify-social-listening",
+      "skills": "./",
+      "description": "Monitor what people actually say about a brand, product, competitor, or topic on Reddit — mentions, sentiment, the communities driving the conversation, and verbatim voice-of-customer quotes — then optionally layer in YouTube channel/video engagement. Routes keyword and community monitoring to a Reddit scraper with built-in sentiment scoring, aggregates sentiment and themes, and surfaces the strongest quotes. Use when a user asks to track brand mentions, run social listening, do voice-of-customer research, gauge sentiment about a product or competitor, find Reddit discussions about a topic, monitor a subreddit, or analyze a YouTube channel's engagement.",
+      "keywords": [
+        "social-listening",
+        "brand-monitoring",
+        "sentiment",
+        "reddit",
+        "voice-of-customer",
+        "mentions",
+        "competitor-monitoring",
+        "youtube",
+        "market-research",
+        "brand-sentiment"
       ],
       "category": "data-extraction"
     },
