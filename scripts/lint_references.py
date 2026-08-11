@@ -275,16 +275,18 @@ def check_repo_paths(skill_dir: Path, repo_paths: list[tuple[str, Path, int]]) -
 
 
 def check_tracking_params(apify_urls: list[tuple[str, Path, int]]) -> list[str]:
-    errors: list[str] = []
+    # Policy (2026-08-11): affiliate params are allowed with disclosure — this
+    # is a warning, not an error. Final call rests with the Apify maintainers.
+    warnings: list[str] = []
     for url, path, lineno in apify_urls:
         params = [p for p in ("fpr=", "fp_sid=") if p in url]
         if params:
-            errors.append(
-                f"{rel(path)}:{lineno}: Apify URL carries tracking/referral "
-                f"parameter '{params[0].rstrip('=')}' — link the plain page "
-                "without affiliate query strings"
+            warnings.append(
+                f"{rel(path)}:{lineno}: Apify URL carries affiliate/referral "
+                f"parameter '{params[0].rstrip('=')}' — allowed, but the skill "
+                "must disclose the author's financial interest (see CONTRIBUTING)"
             )
-    return errors
+    return warnings
 
 
 def check_replace_placeholders(md_files: list[Path]) -> list[str]:
@@ -399,7 +401,9 @@ def main() -> int:
 
         if skill_dir in set(skill_dirs):
             errors.extend(check_repo_paths(skill_dir, repo_paths))
-            errors.extend(check_tracking_params(apify_urls))
+            warnings.extend(
+                f"warning: {w}" for w in check_tracking_params(apify_urls)
+            )
             if skill_dir.name not in EXCLUDED_DIRS:
                 errors.extend(check_replace_placeholders(md_files))
             for path, lineno in scan_tokens(skill_dir):
