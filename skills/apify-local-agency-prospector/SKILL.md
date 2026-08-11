@@ -3,6 +3,9 @@ name: apify-local-agency-prospector
 description: Find local businesses that NEED your service and hand back a prospect list scored by opportunity signal — no website, low rating, or few reviews — each with a verified email and phone ready for outreach. Built for agencies and freelancers selling web design, SEO, ads, reputation, or social-media services to local businesses. Routes a niche + location to a Google Maps business scraper, scores each result by the gap it reveals, and enriches the best fits with verified contact details in the same pipeline. Use when a user asks to find local business leads, prospect businesses without a website, find clients for a web-design / SEO / marketing agency, build a local outreach list, find businesses with bad reviews to pitch, or generate verified leads for a city + niche.
 author: Renzo Madueno
 author_url: https://github.com/renzomacar
+metadata:
+  category: lead-generation
+  keywords: "lead-generation, local-business, agency, prospecting, google-maps, verified-email, web-design-leads, seo-leads, cold-outreach, b2b-leads"
 ---
 
 # Local Agency Prospector
