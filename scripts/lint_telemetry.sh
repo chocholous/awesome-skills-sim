@@ -94,12 +94,18 @@ for file in "${SKILL_FILES[@]}"; do
       continue
     fi
 
-    # Check if this line contains any CLI trigger pattern
+    # Check if this line contains any CLI trigger pattern. The character after
+    # the pattern must not be alphanumeric, so "apify run" does not match
+    # "apify runs ls".
     matched=0
     for pat in "${CLI_PATTERNS[@]}"; do
       if [[ "$line" == *"$pat"* ]]; then
-        matched=1
-        break
+        rest="${line#*"$pat"}"
+        first="${rest:0:1}"
+        if [[ -z "$first" ]] || [[ ! "$first" =~ [a-zA-Z0-9-] ]]; then
+          matched=1
+          break
+        fi
       fi
     done
     [ "$matched" -eq 0 ] && continue
@@ -158,6 +164,13 @@ for file in "${SKILL_FILES[@]}"; do
   done
 done
 
+# Full URL when running in CI; plain filename locally (the file is present there).
+if [ -n "${GITHUB_SERVER_URL:-}" ] && [ -n "${GITHUB_REPOSITORY:-}" ]; then
+  CONTRIB_REF="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/blob/main/CONTRIBUTING.md"
+else
+  CONTRIB_REF="CONTRIBUTING.md"
+fi
+
 if [ "$FAIL" -gt 0 ]; then
   echo ""
   echo "lint: $FAIL violation(s) found."
@@ -165,8 +178,10 @@ if [ "$FAIL" -gt 0 ]; then
   echo "        --user-agent apify-awesome-skills/<skill-dir-name>"
   echo "        --json (or --format json for datasets get-items)"
   echo "        2>/dev/null"
+  echo "      Place each flag on the apify command line itself or on a"
+  echo "      continuation line within $WINDOW lines below it."
   echo "      Exception: --readme commands are exempt from --json and 2>/dev/null."
-  echo "      See CONTRIBUTING.md § 'Telemetry on CLI commands' for details."
+  echo "      See $CONTRIB_REF § 'Telemetry on CLI commands' for details."
   exit 1
 fi
 
