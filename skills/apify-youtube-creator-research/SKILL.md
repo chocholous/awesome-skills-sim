@@ -1,6 +1,9 @@
 ---
 name: apify-youtube-creator-research
 description: Research YouTube channels, videos, Shorts, playlists, search results, comments, and creator positioning using Apify Actors. Use when the user asks for YouTube competitor analysis, creator research, content strategy, keyword/video discovery, audience comment mining, Shorts analysis, sponsor/brand mention discovery, or channel performance benchmarking.
+metadata:
+  category: data-extraction
+  keywords: "youtube, creator-research, channel-analysis, video-research, comments, shorts, content-strategy, competitor-analysis, audience-research, apify"
 ---
 
 # YouTube Creator Research
