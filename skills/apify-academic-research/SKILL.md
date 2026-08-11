@@ -5,6 +5,8 @@ author: apifyforge
 author_url: https://github.com/apifyforge
 license: MIT
 metadata:
+  category: data-extraction
+  keywords: "academic-research, scholarly-papers, literature-review, systematic-review, citations, peer-reviewed, openalex, semantic-scholar, arxiv, pubmed, crossref, orcid, research-trends, rag-corpus, researcher-profiles"
   version: "1.0"
 ---
 
