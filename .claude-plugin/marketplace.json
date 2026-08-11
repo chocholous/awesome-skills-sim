@@ -181,6 +181,30 @@
       "category": "data-extraction"
     },
     {
+      "name": "apify-sim-alpha",
+      "source": "./skills/apify-sim-alpha",
+      "skills": "./",
+      "description": "Simulation skill Alpha. Validates the parallel-merge scenario of the generated-marketplace architecture — two concurrent skill PRs must merge without touching .claude-plugin/marketplace.json. Not a real skill; safe to delete.",
+      "keywords": [
+        "simulation",
+        "parallel-merge",
+        "alpha"
+      ],
+      "category": "data-extraction"
+    },
+    {
+      "name": "apify-sim-bravo",
+      "source": "./skills/apify-sim-bravo",
+      "skills": "./",
+      "description": "Simulation skill Bravo. Second half of the parallel-merge scenario — merged immediately after Alpha from an independent branch, without rebase and without touching the generated catalog. Not a real skill; safe to delete.",
+      "keywords": [
+        "simulation",
+        "parallel-merge",
+        "bravo"
+      ],
+      "category": "data-extraction"
+    },
+    {
       "name": "apify-verified-email-finder",
       "source": "./skills/apify-verified-email-finder",
       "skills": "./",
