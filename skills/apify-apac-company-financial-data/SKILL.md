@@ -3,6 +3,26 @@ name: apify-apac-company-financial-data
 description: Extract APAC company, exchange, and financial-disclosure data via Apify Actors — Korea, Japan, Taiwan, China, Hong Kong, Singapore, India, and SE Asia. Use to look up company registries (Singapore ACRA/UEN, Japan 法人番号, India MCA/OGD), pull listed-company disclosures (Japan TDnet 適時開示, Taiwan MOPS, HKEX 披露易, SGX, India SEBI), track insider/large-shareholder filings (Japan EDINET 大量保有報告書, HKEX 董事股權變動, China A-share 高管增减持), screen stocks on Asian exchanges (KOSPI, TSE/日経225, TWSE, SGX/STI, NSE/BSE India, Eastmoney A-shares, plus Vietnam/Indonesia/Thailand/Philippines/Malaysia), follow IPO calendars (HKEX, Korea, pan-APAC), and check Asian regulator enforcement (Singapore MAS, HK SFC). Triggers — "company registry in Singapore/Japan/India", "listed-company filings in Korea/Taiwan/Hong Kong", "insider filings in Japan/HK/China", "screen Asian stocks / KOSPI / TSE / TWSE / SGX", "Asia IPO calendar", "MAS/SFC enforcement". Factual public data for research — not financial or investment advice.
 author: NexGenData
 author_url: https://apify.com/nexgendata
+metadata:
+  keywords:
+    - apac
+    - asia
+    - company-registry
+    - korea
+    - japan
+    - taiwan
+    - china
+    - hong-kong
+    - singapore
+    - india
+    - stock-screener
+    - ipo
+    - disclosures
+    - insider-trading
+    - edinet
+    - sgx
+    - hkex
+    - enforcement
 ---
 
 # APAC Company & Financial Data
