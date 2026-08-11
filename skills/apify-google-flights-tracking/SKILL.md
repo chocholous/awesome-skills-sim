@@ -6,6 +6,7 @@ author_url: https://github.com/johnisanerd
 license: MIT
 metadata:
   version: "1.0"
+  keywords: "google flights tracking, flight price tracking, airfare monitoring, fare history, price alerts"
 ---
 
 # Google Flights Tracking: Your Own Fare History, With a Baseline in Every Row
