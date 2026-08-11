@@ -3,6 +3,9 @@ name: apify-bounty-radar
 description: Find, screen, and prioritize public GitHub bounty opportunities with Apify Actors. Use when a user asks to find paid GitHub issues, Algora or Polar bounties, bounty races, claimable open-source tasks, or recently posted contribution opportunities, and needs evidence on payout terms, competition, assignment rules, and claimability before starting work.
 author: Peter7896
 author_url: https://github.com/Peter7896
+metadata:
+  category: data-extraction
+  keywords: "bounty, github, algora, polar, open-source, issue-triage, paid-work, contribution, search, crawler, claimability"
 ---
 
 # Apify Bounty Radar
