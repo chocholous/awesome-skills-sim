@@ -11,6 +11,18 @@ description: >
   an Apify account and CLI or MCP access.
 author: n0geegee
 author_url: https://github.com/n0geegee
+metadata:
+  keywords:
+    - website-monitoring
+    - change-detection
+    - page-diff
+    - pricing-monitoring
+    - competitor-monitoring
+    - recruitment
+    - franchise
+    - fdd
+    - filing-monitoring
+    - persistent-snapshots
 ---
 
 # Page Change Intelligence
