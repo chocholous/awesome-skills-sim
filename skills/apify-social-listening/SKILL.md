@@ -3,6 +3,9 @@ name: apify-social-listening
 description: Monitor what people actually say about a brand, product, competitor, or topic on Reddit — mentions, sentiment, the communities driving the conversation, and verbatim voice-of-customer quotes — then optionally layer in YouTube channel/video engagement. Routes keyword and community monitoring to a Reddit scraper with built-in sentiment scoring, aggregates sentiment and themes, and surfaces the strongest quotes. Use when a user asks to track brand mentions, run social listening, do voice-of-customer research, gauge sentiment about a product or competitor, find Reddit discussions about a topic, monitor a subreddit, or analyze a YouTube channel's engagement.
 author: Renzo Madueno
 author_url: https://github.com/renzomacar
+metadata:
+  category: data-extraction
+  keywords: "social-listening, brand-monitoring, sentiment, reddit, voice-of-customer, mentions, competitor-monitoring, youtube, market-research, brand-sentiment"
 ---
 
 # Social Listening
