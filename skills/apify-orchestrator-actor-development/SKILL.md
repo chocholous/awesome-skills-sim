@@ -3,6 +3,9 @@ name: apify-orchestrator-actor-development
 description: Build TypeScript Apify orchestrator Actors — coordinate a sequence of sub-Actors (optionally with an LLM step) using the apify-orchestrator library. Use when creating a new orchestrator Actor, chaining Apify Actors together, adding an OpenRouter LLM step between Actors, or scaffolding parent-Actor workflows that call other Actors.
 author: Fabian Maume
 author_url: https://github.com/fmaume
+metadata:
+  category: development
+  keywords: "orchestrator, orchestration, apify-orchestrator, typescript, actor-development, sub-actors, workflow, pipeline, chain, parent-actor, openrouter, llm, mcp, cost-tracking, maxtotalchargeusd"
 ---
 
 # Apify orchestrator Actor development
@@ -105,7 +108,8 @@ Update `.actor/actor.json`, `.actor/input_schema.json`, `.actor/output_schema.js
 ### Step 7 — Test locally, then deploy
 
 ```bash
-apify run --purge --user-agent apify-awesome-skills/apify-orchestrator-actor-development
+apify run --purge --user-agent apify-awesome-skills/apify-orchestrator-actor-development \
+  --json 2>/dev/null
 apify push
 ```
 
@@ -138,7 +142,7 @@ Local Runs of the orchestrator make **real** child Runs on the Apify platform (t
 
 ## Commands
 
-Every apify CLI invocation below includes `--user-agent apify-awesome-skills/apify-orchestrator-actor-development` for telemetry attribution. Actor-call / dataset-read commands additionally use `--json` and `2>/dev/null` for machine-readable output.
+Every apify CLI invocation below includes `--user-agent apify-awesome-skills/apify-orchestrator-actor-development` for telemetry attribution, plus `--json` and `2>/dev/null` for machine-readable output.
 
 ```bash
 # Bootstrap
@@ -146,8 +150,10 @@ apify create <name> -t ts_empty
 npm install apify-orchestrator
 
 # Local development
-apify run --user-agent apify-awesome-skills/apify-orchestrator-actor-development
-apify run --purge --user-agent apify-awesome-skills/apify-orchestrator-actor-development
+apify run --user-agent apify-awesome-skills/apify-orchestrator-actor-development \
+  --json 2>/dev/null
+apify run --purge --user-agent apify-awesome-skills/apify-orchestrator-actor-development \
+  --json 2>/dev/null
 apify validate-schema
 
 # Discovery (Actor search + schema fetch)
