@@ -6,6 +6,8 @@ author_url: https://github.com/johnisanerd
 license: MIT
 metadata:
   version: "1.0"
+  category: data-extraction
+  keywords: "youtube, youtube-transcript, transcript, subtitles, captions, api"
 ---
 
 # YouTube Transcript API: Captions to Structured JSON
