@@ -3,6 +3,9 @@ name: apify-x-twitter-data
 description: Collect public X/Twitter tweets, timelines, search results, followers, following, lists, and community member datasets with Xquik Apify Actors. Use when user asks for X/Twitter data extraction, social listening, audience analysis, creator research, follower exports, tweet exports, or list/community analysis.
 author: Burak
 author_url: https://github.com/kriptoburak
+metadata:
+  category: data-extraction
+  keywords: "x, twitter, tweets, followers, following, social-listening, audience-analysis, creator-research, hashtags, lists, communities, exports"
 ---
 
 # X/Twitter Data Collection
@@ -11,7 +14,7 @@ Collect public X/Twitter tweet and profile-relation datasets with Xquik Apify Ac
 
 Xquik is an independent third-party service. Not affiliated with X Corp. "Twitter" and "X" are trademarks of X Corp.
 
-**CLI rules:** Always pass `--user-agent apify-awesome-skills/apify-x-twitter-data`, `--json` for Actor metadata and calls, and `--format json` or `--format csv` for dataset exports. Append `2>/dev/null` so CLI progress messages do not break JSON parsing.
+**CLI rules:** Always pass `--user-agent apify-awesome-skills/apify-x-twitter-data`, `--json` for Actor metadata and calls, and `--format json` for dataset exports. Append `2>/dev/null` so CLI progress messages do not break JSON parsing. For CSV deliverables, convert the JSON export with `jq`.
 
 ## Prerequisites
 
@@ -129,11 +132,11 @@ apify datasets get-items DATASET_ID \
   --user-agent apify-awesome-skills/apify-x-twitter-data --format json 2>/dev/null > x-twitter-data.json
 ```
 
-Save a CSV export:
+Save a CSV export by converting the JSON export with `jq`:
 
 ```bash
-apify datasets get-items DATASET_ID \
-  --user-agent apify-awesome-skills/apify-x-twitter-data --format csv 2>/dev/null > x-twitter-data.csv
+jq -r '(.[0] | keys_unsorted) as $k | $k, (.[] | [.[$k[]] | tostring]) | @csv' \
+  x-twitter-data.json > x-twitter-data.csv
 ```
 
 For tweet datasets, summarize count, query or target, time range, top authors, engagement fields present, and representative URLs. For profile-relation datasets, summarize count, relation type, target handles or URLs, verification split if present, follower-count range if present, and the export filename.

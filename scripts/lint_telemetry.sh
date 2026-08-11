@@ -1,9 +1,18 @@
 #!/usr/bin/env bash
 # lint_telemetry.sh — verify every apify CLI invocation in SKILL.md files
-# includes its skill-specific --user-agent flag.
+# follows the three telemetry rules from CONTRIBUTING.md:
+#   Rule 1 — --user-agent apify-awesome-skills/<skill-name>
+#   Rule 2 — --json (or --format json for `datasets get-items`)
+#   Rule 3 — 2>/dev/null stderr redirect
+# Exception: commands fetching an Actor README (--readme) return markdown,
+# not JSON — Rules 2 and 3 do not apply to them (Rule 1 still does).
 #
 # Only lines INSIDE fenced code blocks (``` ... ```) are checked.
 # Prose mentions of apify commands are ignored.
+#
+# Usage:
+#   bash scripts/lint_telemetry.sh                       # all skills
+#   bash scripts/lint_telemetry.sh skills/apify-foo ...  # only these dirs/files
 #
 # Exit 0 if all checks pass, exit 1 if any violation is found.
 # Requires bash 4+ (available on all GitHub Actions runners).
@@ -23,11 +32,28 @@ CLI_PATTERNS=(
   "apify run"
 )
 
-# Find all SKILL.md files under skills/
+# Find SKILL.md files: all under skills/ by default, or only under the
+# dirs/files passed as arguments (used by CI to lint just the skills a PR
+# changes — pre-existing findings on main are kept as exhibits, decision D2).
 SKILL_FILES=()
-while IFS= read -r f; do
-  SKILL_FILES+=("$f")
-done < <(find skills -name "SKILL.md" | sort)
+if [ "$#" -gt 0 ]; then
+  for arg in "$@"; do
+    if [ -f "$arg" ]; then
+      SKILL_FILES+=("$arg")
+    elif [ -d "$arg" ]; then
+      while IFS= read -r f; do
+        SKILL_FILES+=("$f")
+      done < <(find "$arg" -name "SKILL.md" | sort)
+    else
+      echo "lint: $arg: not a file or directory" >&2
+      exit 2
+    fi
+  done
+else
+  while IFS= read -r f; do
+    SKILL_FILES+=("$f")
+  done < <(find skills -name "SKILL.md" | sort)
+fi
 
 if [ ${#SKILL_FILES[@]} -eq 0 ]; then
   echo "lint: no SKILL.md files found under skills/"
@@ -35,13 +61,6 @@ if [ ${#SKILL_FILES[@]} -eq 0 ]; then
 fi
 
 for file in "${SKILL_FILES[@]}"; do
-  skill_name="$(basename "$(dirname "$file")")"
-  if [ "$skill_name" = "_template" ]; then
-    skill_name="REPLACE-skill-name"
-  fi
-  expected_user_agent="apify-awesome-skills/$skill_name"
-  user_agent_pattern="(^|[[:space:]])--user-agent[[:space:]]+['\"]?${expected_user_agent}['\"]?([[:space:]]|$)"
-
   # Read file lines into indexed array
   idx=0
   unset LINES
@@ -75,53 +94,94 @@ for file in "${SKILL_FILES[@]}"; do
       continue
     fi
 
-    # Check if this line contains any CLI trigger pattern
+    # Check if this line contains any CLI trigger pattern. The character after
+    # the pattern must not be alphanumeric, so "apify run" does not match
+    # "apify runs ls".
     matched=0
     for pat in "${CLI_PATTERNS[@]}"; do
       if [[ "$line" == *"$pat"* ]]; then
-        matched=1
-        break
+        rest="${line#*"$pat"}"
+        first="${rest:0:1}"
+        if [[ -z "$first" ]] || [[ ! "$first" =~ [a-zA-Z0-9-] ]]; then
+          matched=1
+          break
+        fi
       fi
     done
     [ "$matched" -eq 0 ] && continue
 
-    # Look for the exact skill-specific user agent on this command's lines.
-    found=0
+    # Look for the required flags on this line or within WINDOW lines
+    found_ua=0
+    found_json=0
+    found_stderr=0
+    has_readme=0
     end=$(( i + WINDOW ))
     [ $end -ge $total ] && end=$(( total - 1 ))
 
     for (( j=i; j<=end; j++ )); do
+      window_line="${LINES[$j]}"
+      [[ "$window_line" == *"--user-agent apify-awesome-skills/"* ]] && found_ua=1
+      if [[ "$window_line" == *"--json"* ]] || [[ "$window_line" == *"--format json"* ]]; then
+        found_json=1
+      fi
+      [[ "$window_line" == *"2>/dev/null"* ]] && found_stderr=1
+      [[ "$window_line" == *"--readme"* ]] && has_readme=1
+      # Stop at the closing fence of the code block
+      if [ "$j" -gt "$i" ] && [[ "$window_line" =~ ^[[:space:]]*(\`\`\`|~~~) ]]; then
+        break
+      fi
+      # Stop at blank lines unless the previous line is a continuation (\)
       if [ "$j" -gt "$i" ]; then
         prev="${LINES[$((j-1))]}"
-        [[ "$prev" != *\\ ]] && break
-      fi
-      if [[ "${LINES[$j]}" =~ $user_agent_pattern ]]; then
-        found=1
-        break
-      fi
-      # Stop at the closing fence of the code block
-      if [[ "${LINES[$j]}" =~ ^[[:space:]]*(\`\`\`|~~~) ]]; then
-        break
+        if [[ "$prev" != *\\ ]] && [[ -z "${window_line// /}" ]]; then
+          break
+        fi
       fi
     done
 
-    if [ "$found" -eq 0 ]; then
-      lineno=$(( i + 1 ))
-      clean_line="$(printf '%s' "$line" | sed 's/^[[:space:]]*//')"
-      echo "lint: $file:$lineno: missing skill-specific user-agent flag"
+    lineno=$(( i + 1 ))
+    clean_line="$(printf '%s' "$line" | sed 's/^[[:space:]]*//')"
+
+    if [ "$found_ua" -eq 0 ]; then
+      echo "lint: $file:$lineno: missing --user-agent apify-awesome-skills/ flag"
       echo "      offending line: $clean_line"
-      echo "      expected: --user-agent $expected_user_agent"
       FAIL=$(( FAIL + 1 ))
+    fi
+
+    # Rules 2 + 3 do not apply to README fetches (--readme output is markdown)
+    if [ "$has_readme" -eq 0 ]; then
+      if [ "$found_json" -eq 0 ]; then
+        echo "lint: $file:$lineno: missing --json flag (or --format json for datasets get-items)"
+        echo "      offending line: $clean_line"
+        FAIL=$(( FAIL + 1 ))
+      fi
+      if [ "$found_stderr" -eq 0 ]; then
+        echo "lint: $file:$lineno: missing 2>/dev/null stderr redirect"
+        echo "      offending line: $clean_line"
+        FAIL=$(( FAIL + 1 ))
+      fi
     fi
   done
 done
+
+# Full URL when running in CI; plain filename locally (the file is present there).
+if [ -n "${GITHUB_SERVER_URL:-}" ] && [ -n "${GITHUB_REPOSITORY:-}" ]; then
+  CONTRIB_REF="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/blob/main/CONTRIBUTING.md"
+else
+  CONTRIB_REF="CONTRIBUTING.md"
+fi
 
 if [ "$FAIL" -gt 0 ]; then
   echo ""
   echo "lint: $FAIL violation(s) found."
   echo "      Every apify CLI call in SKILL.md code blocks must include:"
   echo "        --user-agent apify-awesome-skills/<skill-dir-name>"
-  echo "      See CONTRIBUTING.md § 'Telemetry on CLI commands' for details."
+  echo "        --json (or --format json for datasets get-items)"
+  echo "        2>/dev/null"
+  echo "      Place each flag on the apify command line itself or on a"
+  echo "      continuation line within $WINDOW lines below it."
+  echo "      Exception: --readme commands are exempt from --json and 2>/dev/null."
+  echo "      See $CONTRIB_REF § 'Telemetry on CLI commands' for details."
   exit 1
 fi
 
