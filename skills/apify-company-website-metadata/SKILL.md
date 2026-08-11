@@ -3,6 +3,15 @@ name: apify-company-website-metadata
 description: Extract source-backed company name, description, and industry candidates from one public company website domain with provenance and explicit CRM review gates. Use when the user says enrich a company from its domain, get company metadata from a website, prepare a company record for CRM review, inspect website metadata, or turn a company domain into reviewable structured data. Do not use for registry, credit, financial, contact, email, people, or compliance data.
 author: BRAINIALL
 author_url: https://www.brainiall.com
+metadata:
+  keywords:
+    - company-enrichment
+    - website-metadata
+    - company-domain
+    - crm
+    - provenance
+    - data-quality
+    - apify
 ---
 
 # Company website metadata for CRM review
