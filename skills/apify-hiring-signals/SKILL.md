@@ -11,6 +11,9 @@ description: >
   "which companies are investing in [department]", "find fast-growing companies
   in [industry]", "sales prospecting from LinkedIn", "map who's building a
   [team type] team", or "find companies that recently posted [job title] jobs".
+metadata:
+  category: data-extraction
+  keywords: "hiring signals, lead generation, sales intelligence, linkedin jobs, b2b prospecting, contact enrichment, sales prospecting, job postings"
 author: Khaled Ben Yahya
 author_url: https://github.com/kingmathers92/
 ---
@@ -41,9 +44,11 @@ needs sales tech. This skill surfaces those signals before your competitors do.
 
 _(No need to check upfront — handle errors inline if they arise)_
 
-- `.env` file containing `APIFY_TOKEN=<your_token>`
-  → Get one at https://console.apify.com/account/integrations
-- Node.js 20.6+ (for native `--env-file` support)
+- Apify account ([sign up](https://apify.com))
+- Authentication via one of:
+  - `apify login` (OAuth, if using the Apify CLI)
+  - `APIFY_TOKEN` environment variable
+  - Token from [Apify Console → Settings → Integrations](https://console.apify.com/settings/integrations)
 
 ## Workflow
 
@@ -78,45 +83,50 @@ Ask the user (or infer from their message) for:
 
 ### Step 2: Scrape LinkedIn Jobs
 
-**Actor**: `apify/linkedin-jobs-scraper`
+**Actor**: `curious_coder/linkedin-jobs-scraper`
 
-First, fetch the schema so you build the input correctly:
+First, fetch the input schema so you build the input correctly:
 
 ```bash
-node --env-file=.env ${CLAUDE_PLUGIN_ROOT}/reference/scripts/fetch_actor_details.js \
-  --actor "apify/linkedin-jobs-scraper"
+apify actors info "curious_coder/linkedin-jobs-scraper" --input --json \
+  --user-agent apify-awesome-skills/apify-hiring-signals 2>/dev/null
 ```
 
 Then run the scraper:
 
 ```bash
-node --env-file=.env ${CLAUDE_PLUGIN_ROOT}/reference/scripts/run_actor.js \
-  --actor "apify/linkedin-jobs-scraper" \
-  --input '{
-    "queries": ["JOB_TITLE"],
+apify actors call "curious_coder/linkedin-jobs-scraper" -i '{
+    "keywords": "JOB_TITLE",
     "location": "LOCATION",
-    "maxResults": MAX_RESULTS,
-    "proxy": { "useApifyProxy": true }
-  }'
+    "limitPerSource": MAX_RESULTS,
+    "scrapeCompany": true
+  }' --json \
+  --user-agent apify-awesome-skills/apify-hiring-signals 2>/dev/null
+```
+
+Fetch the results from the run's dataset:
+
+```bash
+apify datasets get-items DATASET_ID --format json \
+  --user-agent apify-awesome-skills/apify-hiring-signals 2>/dev/null
 ```
 
 **Extract from results**:
 
-- `companyName` → deduplicate into a unique company list
-- `companyLinkedinUrl` or `companyUrl` → use as enrichment seed
-- `jobTitle`, `postedAt` → keep for context
-- `companySize` → filter if user asked for size
+- company name → deduplicate into a unique company list
+- company LinkedIn URL or website URL → use as enrichment seed
+- job title, posted date → keep for context
+- company size → filter if user asked for size
 
 **Fallback** — if LinkedIn returns 0 results (rate-limited or geo-blocked):
 
 ```bash
-node --env-file=.env ${CLAUDE_PLUGIN_ROOT}/reference/scripts/run_actor.js \
-  --actor "apify/google-search-scraper" \
-  --input '{
-    "queries": ["site:linkedin.com/jobs JOB_TITLE LOCATION"],
-    "maxResults": 30,
-    "resultsPerPage": 10
-  }'
+apify actors call "apify/google-search-scraper" -i '{
+    "queries": "site:linkedin.com/jobs JOB_TITLE LOCATION",
+    "resultsPerPage": 10,
+    "maxPagesPerQuery": 3
+  }' --json \
+  --user-agent apify-awesome-skills/apify-hiring-signals 2>/dev/null
 ```
 
 Parse company names and URLs from the Google SERP titles and snippets.
@@ -132,25 +142,21 @@ funding rounds, expansions, product launches, and leadership changes.
 
 **Actor**: `apify/google-search-scraper`
 
-Build a query list where each entry is a company-specific signal query:
+Build a newline-separated query list where each line is a company-specific
+signal query:
 
 ```bash
-node --env-file=.env ${CLAUDE_PLUGIN_ROOT}/reference/scripts/run_actor.js \
-  --actor "apify/google-search-scraper" \
-  --input '{
-    "queries": [
-      "\"COMPANY_1\" funding OR raises OR expansion OR launch 2024 OR 2025",
-      "\"COMPANY_2\" funding OR raises OR expansion OR launch 2024 OR 2025",
-      "\"COMPANY_3\" funding OR raises OR expansion OR launch 2024 OR 2025"
-    ],
-    "maxResults": 3,
-    "resultsPerPage": 3,
+apify actors call "apify/google-search-scraper" -i '{
+    "queries": "\"COMPANY_1\" funding OR raises OR expansion OR launch 2024 OR 2025\n\"COMPANY_2\" funding OR raises OR expansion OR launch 2024 OR 2025\n\"COMPANY_3\" funding OR raises OR expansion OR launch 2024 OR 2025",
+    "resultsPerPage": 10,
+    "maxPagesPerQuery": 1,
     "countryCode": "us"
-  }'
+  }' --json \
+  --user-agent apify-awesome-skills/apify-hiring-signals 2>/dev/null
 ```
 
 **Cost control**: batch all company queries in a single Actor run (pass the
-full `queries` array). Do NOT run one Actor call per company.
+full newline-separated `queries` string). Do NOT run one Actor call per company.
 
 **Extract per company**:
 
@@ -168,17 +174,16 @@ to find emails and phone numbers — especially on `/about`, `/team`, `/contact`
 **Actor**: `vdrmota/contact-info-scraper`
 
 ```bash
-node --env-file=.env ${CLAUDE_PLUGIN_ROOT}/reference/scripts/run_actor.js \
-  --actor "vdrmota/contact-info-scraper" \
-  --input '{
+apify actors call "vdrmota/contact-info-scraper" -i '{
     "startUrls": [
       { "url": "https://COMPANY_1_WEBSITE/contact" },
       { "url": "https://COMPANY_2_WEBSITE/about" }
     ],
     "maxDepth": 1,
-    "maxPagesPerStartUrl": 3,
-    "proxyConfiguration": { "useApifyProxy": true }
-  }'
+    "maxRequestsPerStartUrl": 3,
+    "sameDomain": true
+  }' --json \
+  --user-agent apify-awesome-skills/apify-hiring-signals 2>/dev/null
 ```
 
 **Extract**:
@@ -186,7 +191,7 @@ node --env-file=.env ${CLAUDE_PLUGIN_ROOT}/reference/scripts/run_actor.js \
 - `emails` array → filter out support@, info@, noreply@ — keep personal or
   role-based addresses (e.g. cto@, vp-sales@, firstname.lastname@)
 - `phones` array → keep if present
-- `linkedInUrls` → executive profile links if present
+- `linkedIns` → executive profile links if present
 
 **Skip this step** for quick/overview queries where the user only asked for a
 company list, not contact details.
@@ -212,17 +217,22 @@ Always include:
 - **Suggested follow-up**: "Want me to export this as a CSV?" or "Should I
   search for the direct LinkedIn profiles of the decision-makers?"
 
-For CSV output, re-run Step 4 scraper with `--output YYYY-MM-DD_prospects.csv --format csv`.
+For CSV output, re-fetch the dataset in CSV format:
+
+```bash
+apify datasets get-items DATASET_ID --format csv \
+  --user-agent apify-awesome-skills/apify-hiring-signals 2>/dev/null > YYYY-MM-DD_prospects.csv
+```
 
 ---
 
 ## Output Formats
 
-| Format              | When to use              | Command flag                                       |
-| ------------------- | ------------------------ | -------------------------------------------------- |
-| Quick table in chat | ≤ 20 companies, overview | _(default — no flag)_                              |
-| CSV                 | Full export, CRM import  | `--output YYYY-MM-DD_prospects.csv --format csv`   |
-| JSON                | Downstream automation    | `--output YYYY-MM-DD_prospects.json --format json` |
+| Format              | When to use              | How                                                  |
+| ------------------- | ------------------------ | ---------------------------------------------------- |
+| Quick table in chat | ≤ 20 companies, overview | _(default — assemble from JSON results)_             |
+| CSV                 | Full export, CRM import  | `apify datasets get-items DATASET_ID --format csv`   |
+| JSON                | Downstream automation    | `apify datasets get-items DATASET_ID --format json`  |
 
 ---
 
@@ -230,11 +240,11 @@ For CSV output, re-run Step 4 scraper with `--output YYYY-MM-DD_prospects.csv --
 
 Always cap results before running:
 
-| Actor                          | Field to cap           | Default cap |
-| ------------------------------ | ---------------------- | ----------- |
-| `apify/linkedin-jobs-scraper`  | `maxResults`           | 50          |
-| `apify/google-search-scraper`  | `maxResults` per query | 3           |
-| `vdrmota/contact-info-scraper` | `maxPagesPerStartUrl`  | 3           |
+| Actor                                 | Field to cap             | Default cap |
+| ------------------------------------- | ------------------------ | ----------- |
+| `curious_coder/linkedin-jobs-scraper` | `limitPerSource`         | 50          |
+| `apify/google-search-scraper`         | `maxPagesPerQuery`       | 1           |
+| `vdrmota/contact-info-scraper`        | `maxRequestsPerStartUrl` | 3           |
 
 Warn the user before running more than 50 companies through the full 3-actor
 pipeline — that can consume significant credits.
@@ -243,11 +253,11 @@ pipeline — that can consume significant credits.
 
 ## Error Handling
 
-| Error                     | Cause                       | Fix                                            |
-| ------------------------- | --------------------------- | ---------------------------------------------- |
-| `APIFY_TOKEN not found`   | Missing `.env`              | Ask user to add `APIFY_TOKEN=xxx` to `.env`    |
-| `Actor not found`         | Typo in Actor ID            | Verify spelling; re-run `fetch_actor_details`  |
-| `Run FAILED`              | Auth, quota, or input error | Check Apify console link in error output       |
-| `0 results from LinkedIn` | Rate-limited                | Use Google fallback in Step 2                  |
-| `contacts array empty`    | No public emails on site    | Note in output; suggest LinkedIn manual lookup |
-| `Timeout`                 | Too many URLs in batch      | Reduce `startUrls` to ≤ 10 per run             |
+| Error                     | Cause                       | Fix                                              |
+| ------------------------- | --------------------------- | ------------------------------------------------ |
+| `Not authenticated`       | Missing Apify auth          | Run `apify login` or set `APIFY_TOKEN`           |
+| `Actor not found`         | Typo in Actor ID            | Verify spelling; re-run `apify actors info`      |
+| `Run FAILED`              | Auth, quota, or input error | Check Apify console link in error output         |
+| `0 results from LinkedIn` | Rate-limited                | Use Google fallback in Step 2                    |
+| `contacts array empty`    | No public emails on site    | Note in output; suggest LinkedIn manual lookup   |
+| `Timeout`                 | Too many URLs in batch      | Reduce `startUrls` to ≤ 10 per run               |

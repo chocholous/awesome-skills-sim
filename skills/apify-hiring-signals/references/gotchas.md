@@ -29,10 +29,10 @@ Before running any Actor, estimate cost based on expected scale.
 
 ## Actor-specific notes
 
-### `apify/linkedin-jobs-scraper`
+### `curious_coder/linkedin-jobs-scraper`
 
 - Some regions may throttle results
-- Enable Apify proxy support when available
+- Cap results with `limitPerSource`
 - Deduplicate companies after scraping
 
 ### `apify/google-search-scraper`

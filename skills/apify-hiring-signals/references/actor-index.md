@@ -4,7 +4,7 @@ Comprehensive Actor routing table for converting hiring signals into sales intel
 
 | Platform / Data Source | User intent                                                  | Actor ID                       | Tier      | Notes                                               |
 | ---------------------- | ------------------------------------------------------------ | ------------------------------ | --------- | --------------------------------------------------- |
-| LinkedIn Jobs          | Find companies hiring for a role                             | `apify/linkedin-jobs-scraper`  | apify     | Primary hiring signal source. Use `maxResults` ≤ 50 |
+| LinkedIn Jobs          | Find companies hiring for a role                             | `curious_coder/linkedin-jobs-scraper` | community | Primary hiring signal source. Use `limitPerSource` ≤ 50 |
 | Google Search          | Enrich companies with funding, expansion, and growth signals | `apify/google-search-scraper`  | apify     | Batch multiple company queries into a single run    |
 | Company Websites       | Extract publicly available contact details                   | `vdrmota/contact-info-scraper` | community | Focus on `/contact`, `/about`, and `/team` pages    |
 
