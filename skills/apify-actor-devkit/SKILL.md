@@ -6,6 +6,19 @@ author_url: https://github.com/apifyforge
 license: MIT
 metadata:
   version: "1.0"
+  keywords:
+    - developer-tools
+    - actor-testing
+    - ab-testing
+    - input-validation
+    - pipeline-validation
+    - regression-detection
+    - ci-gate
+    - quality-monitoring
+    - compliance
+    - gdpr
+    - fleet-analytics
+    - apify-developers
 ---
 
 # Actor DevKit — validate, test and monitor your own Apify Actors
