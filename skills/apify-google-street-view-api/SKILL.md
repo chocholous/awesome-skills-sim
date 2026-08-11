@@ -5,6 +5,8 @@ author: John Cole
 author_url: https://github.com/johnisanerd
 license: MIT
 metadata:
+  category: data-extraction
+  keywords: "apify, street-view, google-maps, panorama, mcp"
   version: "1.0"
 ---
 
