@@ -6,6 +6,8 @@ author_url: https://github.com/johnisanerd
 license: MIT
 metadata:
   version: "1.0"
+  category: data-extraction
+  keywords: "apify, google-jobs, jobs, job-scraper, job-scraping, recruiting, json, mcp, claude"
 ---
 
 # Scrape Google Jobs: Listings to Structured JSON
