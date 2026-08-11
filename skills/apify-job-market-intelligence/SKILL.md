@@ -3,6 +3,9 @@ name: apify-job-market-intelligence
 description: Build job-market intelligence from public job boards using Apify Actors. Use when the user asks to analyze hiring demand, find companies hiring for a role, compare job-market trends, scrape LinkedIn Jobs, Google Jobs, Indeed, or Glassdoor, extract required skills from postings, rank target companies, benchmark salaries, or create a focused job-search pipeline.
 author: Samyak Jain
 author_url: https://github.com/Samyak-jain7
+metadata:
+  category: data-extraction
+  keywords: "jobs, job-search, hiring, recruiting, talent-intelligence, linkedin-jobs, google-jobs, indeed, glassdoor, salary, skills, career, market-intelligence"
 ---
 
 # Job Market Intelligence
@@ -55,7 +58,7 @@ Prefer the narrowest route that answers the question with the lowest waste.
 
 | User need | Primary Actor | Secondary Actor | Best for |
 |---|---|---|---|
-| LinkedIn-heavy sourcing or company-focused roles | `scrapeengine/linkedin-jobs-scraper` | `automly/linkedin-jobs-scraper` | Fresh LinkedIn postings, company jobs, work-mode filters |
+| LinkedIn-heavy sourcing or company-focused roles | `curious_coder/linkedin-jobs-scraper` | `automly/linkedin-jobs-scraper` | Fresh LinkedIn postings, company jobs, work-mode filters |
 | Broad market scan across Google Jobs | `epctex/google-jobs-scraper` | `apify/google-search-scraper` | Coverage across multiple job boards and direct employer pages |
 | Salary, rating, and employer-review context | `crawlerbros/glassdoor-jobs-scraper` | `simpleapi/glassdoor-jobs-scraper` | Salary ranges, company rating, Glassdoor-specific metadata |
 | Indeed-specific job board analysis | `misceres/indeed-scraper` | Actor Store search for `indeed jobs scraper` | Indeed listings and regional job-market checks |
@@ -73,7 +76,7 @@ Routing rules:
 Always fetch the current Actor schema before constructing input. Job Actors change field names often.
 
 ```bash
-apify actors info "scrapeengine/linkedin-jobs-scraper" --input \
+apify actors info "curious_coder/linkedin-jobs-scraper" --input \
   --json \
   --user-agent apify-awesome-skills/apify-job-market-intelligence \
   2>/dev/null
@@ -97,8 +100,8 @@ Keep early runs small. A 50-100 item run is enough to validate quality before sc
 Example LinkedIn Jobs run:
 
 ```bash
-apify actors call "scrapeengine/linkedin-jobs-scraper" \
-  --input '{"keywords":"SDE2 Java backend engineer","location":"Bangalore, India","publishedAt":"week","workType":"hybrid","maxJobs":100}' \
+apify actors call "curious_coder/linkedin-jobs-scraper" \
+  --input '{"keywords":"SDE2 Java backend engineer","location":"Bangalore, India","datePosted":"pastWeek","limitPerSource":100}' \
   --json \
   --user-agent apify-awesome-skills/apify-job-market-intelligence \
   2>/dev/null
