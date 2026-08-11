@@ -120,11 +120,15 @@ apify datasets get-items DATASET_ID --format json \
 
 ```bash
 apify actors call "apify/google-search-scraper" \
-  -i '{"queries": "site:linkedin.com/jobs JOB_TITLE LOCATION", "resultsPerPage": 10, "maxPagesPerQuery": 3}' \
+  -i '{"queries": "site:linkedin.com/jobs JOB_TITLE LOCATION", "maxPagesPerQuery": 3}' \
   --json \
   --user-agent apify-awesome-skills/apify-hiring-signals \
   2>/dev/null
 ```
+
+`maxPagesPerQuery` is the only result-count control on this Actor's input
+schema (there is no `resultsPerPage` field) — each page returns roughly 10
+results, so `maxPagesPerQuery: 3` yields up to ~30 results.
 
 Parse company names and URLs from the Google SERP titles and snippets.
 
@@ -144,7 +148,7 @@ signal query:
 
 ```bash
 apify actors call "apify/google-search-scraper" \
-  -i '{"queries": "\"COMPANY_1\" funding OR raises OR expansion OR launch 2024 OR 2025\n\"COMPANY_2\" funding OR raises OR expansion OR launch 2024 OR 2025", "resultsPerPage": 10, "maxPagesPerQuery": 1, "countryCode": "us"}' \
+  -i '{"queries": "\"COMPANY_1\" funding OR raises OR expansion OR launch 2024 OR 2025\n\"COMPANY_2\" funding OR raises OR expansion OR launch 2024 OR 2025", "maxPagesPerQuery": 1, "countryCode": "us"}' \
   --json \
   --user-agent apify-awesome-skills/apify-hiring-signals \
   2>/dev/null
