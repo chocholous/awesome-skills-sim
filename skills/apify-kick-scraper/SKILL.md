@@ -2,17 +2,7 @@
 name: apify-kick-scraper
 description: Research Kick.com creators, channels, categories, and live streams with the AI Tools Max Kick Data Scraper Actor on Apify. Use when discovering Kick streamers, comparing channel audiences, mapping categories, finding live creators by language or tag, exporting channel snapshots, or building creator and market-research datasets from Kick.
 metadata:
-  keywords:
-    - kick
-    - kick.com
-    - streamers
-    - creators
-    - creator-discovery
-    - market-research
-    - live-streams
-    - influencer-research
-    - category-analysis
-    - apify
+  keywords: "kick, kick.com, streamers, creators, creator-discovery, market-research, live-streams, influencer-research, category-analysis, apify"
 ---
 
 # Apify Kick Scraper
