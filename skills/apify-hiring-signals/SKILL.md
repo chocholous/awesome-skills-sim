@@ -95,13 +95,11 @@ apify actors info "curious_coder/linkedin-jobs-scraper" --input --json \
 Then run the scraper:
 
 ```bash
-apify actors call "curious_coder/linkedin-jobs-scraper" -i '{
-    "keywords": "JOB_TITLE",
-    "location": "LOCATION",
-    "limitPerSource": MAX_RESULTS,
-    "scrapeCompany": true
-  }' --json \
-  --user-agent apify-awesome-skills/apify-hiring-signals 2>/dev/null
+apify actors call "curious_coder/linkedin-jobs-scraper" \
+  -i '{"keywords": "JOB_TITLE", "location": "LOCATION", "limitPerSource": MAX_RESULTS, "scrapeCompany": true}' \
+  --json \
+  --user-agent apify-awesome-skills/apify-hiring-signals \
+  2>/dev/null
 ```
 
 Fetch the results from the run's dataset:
@@ -121,12 +119,11 @@ apify datasets get-items DATASET_ID --format json \
 **Fallback** — if LinkedIn returns 0 results (rate-limited or geo-blocked):
 
 ```bash
-apify actors call "apify/google-search-scraper" -i '{
-    "queries": "site:linkedin.com/jobs JOB_TITLE LOCATION",
-    "resultsPerPage": 10,
-    "maxPagesPerQuery": 3
-  }' --json \
-  --user-agent apify-awesome-skills/apify-hiring-signals 2>/dev/null
+apify actors call "apify/google-search-scraper" \
+  -i '{"queries": "site:linkedin.com/jobs JOB_TITLE LOCATION", "resultsPerPage": 10, "maxPagesPerQuery": 3}' \
+  --json \
+  --user-agent apify-awesome-skills/apify-hiring-signals \
+  2>/dev/null
 ```
 
 Parse company names and URLs from the Google SERP titles and snippets.
@@ -146,13 +143,11 @@ Build a newline-separated query list where each line is a company-specific
 signal query:
 
 ```bash
-apify actors call "apify/google-search-scraper" -i '{
-    "queries": "\"COMPANY_1\" funding OR raises OR expansion OR launch 2024 OR 2025\n\"COMPANY_2\" funding OR raises OR expansion OR launch 2024 OR 2025\n\"COMPANY_3\" funding OR raises OR expansion OR launch 2024 OR 2025",
-    "resultsPerPage": 10,
-    "maxPagesPerQuery": 1,
-    "countryCode": "us"
-  }' --json \
-  --user-agent apify-awesome-skills/apify-hiring-signals 2>/dev/null
+apify actors call "apify/google-search-scraper" \
+  -i '{"queries": "\"COMPANY_1\" funding OR raises OR expansion OR launch 2024 OR 2025\n\"COMPANY_2\" funding OR raises OR expansion OR launch 2024 OR 2025", "resultsPerPage": 10, "maxPagesPerQuery": 1, "countryCode": "us"}' \
+  --json \
+  --user-agent apify-awesome-skills/apify-hiring-signals \
+  2>/dev/null
 ```
 
 **Cost control**: batch all company queries in a single Actor run (pass the
@@ -174,16 +169,11 @@ to find emails and phone numbers — especially on `/about`, `/team`, `/contact`
 **Actor**: `vdrmota/contact-info-scraper`
 
 ```bash
-apify actors call "vdrmota/contact-info-scraper" -i '{
-    "startUrls": [
-      { "url": "https://COMPANY_1_WEBSITE/contact" },
-      { "url": "https://COMPANY_2_WEBSITE/about" }
-    ],
-    "maxDepth": 1,
-    "maxRequestsPerStartUrl": 3,
-    "sameDomain": true
-  }' --json \
-  --user-agent apify-awesome-skills/apify-hiring-signals 2>/dev/null
+apify actors call "vdrmota/contact-info-scraper" \
+  -i '{"startUrls": [{"url": "https://COMPANY_1_WEBSITE/contact"}, {"url": "https://COMPANY_2_WEBSITE/about"}], "maxDepth": 1, "maxRequestsPerStartUrl": 3, "sameDomain": true}' \
+  --json \
+  --user-agent apify-awesome-skills/apify-hiring-signals \
+  2>/dev/null
 ```
 
 **Extract**:
@@ -217,22 +207,24 @@ Always include:
 - **Suggested follow-up**: "Want me to export this as a CSV?" or "Should I
   search for the direct LinkedIn profiles of the decision-makers?"
 
-For CSV output, re-fetch the dataset in CSV format:
+For CSV output, fetch the dataset as JSON and convert it (e.g. with `jq` or a
+spreadsheet tool):
 
 ```bash
-apify datasets get-items DATASET_ID --format csv \
-  --user-agent apify-awesome-skills/apify-hiring-signals 2>/dev/null > YYYY-MM-DD_prospects.csv
+apify datasets get-items DATASET_ID --format json \
+  --user-agent apify-awesome-skills/apify-hiring-signals \
+  2>/dev/null > YYYY-MM-DD_prospects.json
 ```
 
 ---
 
 ## Output Formats
 
-| Format              | When to use              | How                                                  |
-| ------------------- | ------------------------ | ---------------------------------------------------- |
-| Quick table in chat | ≤ 20 companies, overview | _(default — assemble from JSON results)_             |
-| CSV                 | Full export, CRM import  | `apify datasets get-items DATASET_ID --format csv`   |
-| JSON                | Downstream automation    | `apify datasets get-items DATASET_ID --format json`  |
+| Format              | When to use              | How                                                 |
+| ------------------- | ------------------------ | --------------------------------------------------- |
+| Quick table in chat | ≤ 20 companies, overview | _(default — assemble from JSON results)_            |
+| CSV                 | Full export, CRM import  | Fetch dataset as JSON, convert with `jq` or similar |
+| JSON                | Downstream automation    | `apify datasets get-items DATASET_ID --format json` |
 
 ---
 
