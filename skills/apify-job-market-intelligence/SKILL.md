@@ -3,6 +3,9 @@ name: apify-job-market-intelligence
 description: Map a job market from live listings — who is hiring, what they pay, where the roles are, remote vs onsite, and how employers are rated. Routes a role + location to an Indeed scraper that returns salaries, companies, job types and descriptions, aggregates them into a market snapshot (salary range, top hirers, remote share, demand by location), and optionally pulls employer reviews for reputation. Use when a user asks to research a job market, benchmark salaries for a role, find companies hiring for a position, scope hiring demand in a city, build a recruiting target list, analyze a competitor's hiring, or check what a role pays.
 author: Renzo Madueno
 author_url: https://github.com/renzomacar
+metadata:
+  category: data-extraction
+  keywords: "job-market, recruitment, salary-benchmark, indeed, hiring-intelligence, labor-market, staffing, compensation, glassdoor, talent"
 ---
 
 # Job Market Intelligence
@@ -46,14 +49,14 @@ Ask as one block before any Actor call:
 3. **Depth** — listings per query (`maxResultsPerQuery`, default `100`). More = better salary statistics.
 4. **Filters** (optional) — `datePosted` (recency), `jobType` (full-time, contract…), surfaced as follow-ups, not in the first block.
 5. **Lens** — who is asking, which shapes the report (Step 5): `recruiter` (target list of hirers), `comp/HR` (salary benchmark), `job-seeker` (offer benchmark), or `sales` (companies hiring = growth signal).
-6. **Employer reputation?** — pull Glassdoor reviews for the top hirers? (`yes`/`no`, default `no` — it needs Glassdoor company URLs and adds cost).
+6. **Employer reputation?** — pull Glassdoor reviews for the top hirers? (`yes`/`no`, default `no` — adds cost).
 
 ### Step 2: Run the Indeed scraper
 
 | User need | Actor ID | Tier | Best for |
 |-----------|----------|------|----------|
 | Listings + **salaries + companies + role data** | `renzomacar/indeed-jobs` | community | the core market data: salary min/max, company, location, jobType, remote, companyRating |
-| **Employer reputation** for named companies | `renzomacar/glassdoor-reviews` | community | optional reputation layer (needs Glassdoor company URLs) |
+| **Employer reputation** for named companies | `getdataforme/glassdoor-reviews-scraper` | community | optional reputation layer (searches by company name) |
 
 `Tier` = `apify` (Apify-maintained) or `community` (third-party). Both are public on the [Apify Store](https://apify.com/store).
 
@@ -70,11 +73,11 @@ Each listing returns `jobTitle`, `company`, `location`, `salary`, `salaryMin`, `
 
 ### Step 3: (optional) Employer reputation
 
-If the user wants reputation on the top hirers, take the company names from Step 2, resolve their Glassdoor company URLs, and run:
+If the user wants reputation on the top hirers, take the company names from Step 2 and run one call per company (the actor searches by name, not URL):
 
 ```bash
-apify actors call "renzomacar/glassdoor-reviews" \
-  -i '{"companyUrls": ["https://www.glassdoor.com/Reviews/Google-Reviews-E9079.htm"], "maxReviewsPerCompany": 50}' \
+apify actors call "getdataforme/glassdoor-reviews-scraper" \
+  -i '{"Keyword": "Google", "ItemLimit": 50}' \
   --user-agent apify-awesome-skills/apify-job-market-intelligence \
   --json 2>/dev/null
 ```
