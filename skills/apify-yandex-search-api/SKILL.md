@@ -5,6 +5,8 @@ author: John Cole
 author_url: https://github.com/johnisanerd
 license: MIT
 metadata:
+  category: data-extraction
+  keywords: "apify, yandex, yandex-search, serp, search-api, seo, json, mcp, claude"
   version: "1.0"
 ---
 
