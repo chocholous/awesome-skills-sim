@@ -5,6 +5,8 @@ author: John Cole
 author_url: https://github.com/johnisanerd
 license: MIT
 metadata:
+  category: data-extraction
+  keywords: "apify, job-search, jobs-api, job-feed, google-jobs, recruiting, json, mcp, claude"
   version: "1.0"
 ---
 
