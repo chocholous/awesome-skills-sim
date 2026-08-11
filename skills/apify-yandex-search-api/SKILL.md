@@ -6,6 +6,7 @@ author_url: https://github.com/johnisanerd
 license: MIT
 metadata:
   version: "1.0"
+  keywords: "yandex, yandex-search, serp, search-api, seo, json, mcp, claude"
 ---
 
 # Yandex Search API: Full SERP Results as JSON
