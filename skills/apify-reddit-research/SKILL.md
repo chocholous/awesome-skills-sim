@@ -140,10 +140,7 @@ After running the Reddit discovery Actor, you will often find high-value URLs in
 ```bash
 # Step 2: Enrich a linked article found in Reddit results
 apify actors call apify/website-content-crawler \
-  -i '{
-    "startUrls": [{"url": "https://www.anthropic.com/news/claude-3-5-sonnet"}],
-    "maxCrawlPages": 2
-  }' \
+  -i '{"startUrls": [{"url": "https://www.anthropic.com/news/claude-3-5-sonnet"}], "maxCrawlPages": 2}' \
   --user-agent apify-awesome-skills/apify-reddit-research \
   --json 2>/dev/null
 ```
