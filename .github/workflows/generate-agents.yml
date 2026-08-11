@@ -59,6 +59,20 @@ jobs:
 
           FAIL=0
 
+          # Out-of-scope: PR adds no skill and only touches generated catalog
+          # files — there is nothing for the post-merge bot to regenerate
+          # from. Catch this before the general messages below so the
+          # contributor gets the precise reason instead of the generic
+          # "generated file, edit frontmatter" error (which assumes a skill
+          # dir is present).
+          if [ "$MAINTAINER" -eq 0 ] && [ -z "$SKILL_DIRS" ]; then
+            NON_CATALOG=$(echo "$CHANGED" | grep -vE '^(\.claude-plugin/marketplace\.json|agents/AGENTS\.md|README\.md)$' || true)
+            if [ -z "$NON_CATALOG" ]; then
+              echo "::error::this PR only edits generated catalog files and adds no skill — the catalog is generated from skills/<name>/SKILL.md frontmatter after merge; submit a skill folder instead (see CONTRIBUTING.md)"
+              FAIL=1
+            fi
+          fi
+
           if [ "$MAINTAINER" -eq 0 ] && [ "$N_SKILLS" -gt 1 ]; then
             echo "::error::PR touches $N_SKILLS skills; one skill per PR (or ask a maintainer for the 'maintainer' label)."
             echo "$SKILL_DIRS" | sed 's/^/  - /'
@@ -164,9 +178,43 @@ jobs:
         continue-on-error: true
         run: uv run scripts/generate_agents.py
 
+      # Informational only: when a PR changes the lint rules themselves, show
+      # what those new rules do across the WHOLE catalog (not just the PR's
+      # changed skills). Pre-existing findings on main are kept as exhibits
+      # (decision D2, see the comment above "Determine changed skill dirs"),
+      # so this must never gate the PR — it just gives the rule author (and
+      # reviewers) visibility into blast radius before merge.
+      - name: Full lint audit (rule change)
+        id: audit
+        continue-on-error: true
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          CHANGED=$(git diff --name-only --diff-filter=ACMRT "origin/$BASE_REF...HEAD")
+          RULE_FILES=$(echo "$CHANGED" | grep -xE 'scripts/lint_telemetry\.sh|scripts/lint_references\.py|scripts/generate_agents\.py' || true)
+
+          if [ -z "$RULE_FILES" ]; then
+            echo "No lint-rule files changed — skipping full-catalog audit."
+            exit 0
+          fi
+
+          echo "Lint rule files changed in this PR:"
+          echo "$RULE_FILES" | sed 's/^/  - /'
+          echo
+
+          echo "=== bash scripts/lint_telemetry.sh (full catalog) ==="
+          bash scripts/lint_telemetry.sh || true
+          echo
+          echo "=== uv run scripts/lint_references.py (full catalog, offline) ==="
+          uv run scripts/lint_references.py || true
+
+          echo "::notice::rule change — full-catalog audit above shows the impact of the new rules (informational, not gating)"
+          exit 0
+
       # All checks run to completion (continue-on-error) so a contributor sees
       # every problem in one CI run instead of iterating; this step is the
-      # single pass/fail gate.
+      # single pass/fail gate. "audit" is deliberately excluded — it is
+      # informational and must never affect the verdict.
       - name: Aggregate verdict
         env:
           V_SCOPE: ${{ steps.scope.outcome }}

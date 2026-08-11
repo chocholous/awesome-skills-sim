@@ -25,10 +25,15 @@ Offline rules (always):
   - no leftover REPLACE placeholders from skills/_template
   - warn (stderr, non-fatal) on singular reference/ directories
 
-Online rule (only with --check-actors):
+Online rules (only with --check-actors):
   - actor-id must exist on the Apify Store, be public, and not deprecated
     (unauthenticated GET https://api.apify.com/v2/acts/{owner}~{name});
     API unavailability is reported as a warning, never as a failure.
+  - (warning only) a documented `--input '{...}'` / `-i '{...}'` JSON value
+    next to an actor invocation is compared against that actor's default
+    build input schema (GET .../builds/default); fields not in the schema
+    are reported as warnings, never errors. Unparseable or absent examples,
+    and API unavailability, are skipped silently.
 
 Usage:
   uv run scripts/lint_references.py                      # offline, all skills
@@ -360,6 +365,152 @@ def check_actors_online(
     return errors, warnings
 
 
+# --- Input-schema check (warning only, --check-actors mode) ---------------
+#
+# For each actor already being verified online, fetch its default build's
+# input schema and compare it against any `--input '{...}'` / `-i '{...}'`
+# JSON documented next to an invocation of that actor in fenced code. Fields
+# the actor's current schema doesn't recognize are reported as warnings —
+# never errors, since the schema can legitimately change independently of
+# the skill doc, and this check's extraction is necessarily heuristic.
+
+INPUT_FLAG_RE = re.compile(r"(?:--input|-i)\s+'")
+INPUT_FILE_RE = re.compile(r"--input-file\b")
+INPUT_SEARCH_SPAN = 3  # lines below the actor-id line to look for --input/-i
+INPUT_JSON_MAX_LINES = 60  # safety cap collecting a multiline quoted JSON value
+
+
+def fetch_input_schema_properties(actor_id: str) -> set[str] | None:
+    """Return the default build's top-level input property names, or None to
+    skip this actor (network error, missing build, or absent/malformed
+    inputSchema — all treated as "can't verify, don't warn")."""
+    owner, name = actor_id.split("/", 1)
+    url = f"{APIFY_API_BASE}/{urllib.parse.quote(owner)}~{urllib.parse.quote(name)}/builds/default"
+    for attempt in range(1 + API_RETRIES):
+        try:
+            request = urllib.request.Request(url, headers={"User-Agent": API_USER_AGENT})
+            with urllib.request.urlopen(request, timeout=API_TIMEOUT) as response:
+                data = json.load(response).get("data") or {}
+                raw_schema = data.get("inputSchema")
+                if not raw_schema:
+                    return None
+                schema = json.loads(raw_schema)
+                properties = schema.get("properties")
+                return set(properties.keys()) if isinstance(properties, dict) else None
+        except urllib.error.HTTPError as exc:
+            if exc.code == 404:
+                return None
+            # 429/5xx — retry, then give up silently.
+        except (urllib.error.URLError, TimeoutError, OSError, json.JSONDecodeError):
+            pass
+        if attempt < API_RETRIES:
+            time.sleep(1)
+    return None
+
+
+def compute_fence_flags(lines: list[str]) -> list[bool]:
+    """Per-line: True if the line sits inside a fenced code block (the fence
+    marker lines themselves are False)."""
+    flags: list[bool] = []
+    in_fence = False
+    for line in lines:
+        if FENCE_RE.match(line):
+            in_fence = not in_fence
+            flags.append(False)
+            continue
+        flags.append(in_fence)
+    return flags
+
+
+def extract_quoted_value(lines: list[str], start_idx: int, start_col: int) -> str | None:
+    """Collect text after an opening quote up to the matching closing quote,
+    possibly spanning multiple lines. None if no closing quote is found
+    within INPUT_JSON_MAX_LINES."""
+    parts: list[str] = []
+    for i in range(start_idx, min(start_idx + INPUT_JSON_MAX_LINES, len(lines))):
+        segment = lines[i][start_col:] if i == start_idx else lines[i]
+        q = segment.find("'")
+        if q != -1:
+            parts.append(segment[:q])
+            return "\n".join(parts)
+        parts.append(segment)
+    return None
+
+
+def find_input_json(
+    lines: list[str], fence_flags: list[bool], anchor_idx: int
+) -> tuple[dict, int] | None:
+    """Look from the actor-id line (anchor_idx, 0-based) up to
+    INPUT_SEARCH_SPAN lines below it, staying inside the fenced block, for a
+    `--input '...'` / `-i '...'` value. Returns (parsed dict, 0-based line
+    index of the flag), or None if none is found or it doesn't parse cleanly
+    as JSON (placeholders, etc. — silently skipped, never reported)."""
+    limit = min(anchor_idx + INPUT_SEARCH_SPAN, len(lines) - 1)
+    for k in range(anchor_idx, limit + 1):
+        if not fence_flags[k]:
+            break
+        line = lines[k]
+        if INPUT_FILE_RE.search(line):
+            continue
+        match = INPUT_FLAG_RE.search(line)
+        if not match:
+            continue
+        raw = extract_quoted_value(lines, k, match.end())
+        if raw is None:
+            return None
+        try:
+            parsed = json.loads(raw)
+        except json.JSONDecodeError:
+            return None
+        return (parsed, k) if isinstance(parsed, dict) else None
+    return None
+
+
+def check_input_schema(actor_occurrences: list[tuple[str, Path, int]]) -> list[str]:
+    """Warn (never error, never network-fatal) when a documented --input/-i
+    JSON references a field absent from the actor's current input schema."""
+    warnings: list[str] = []
+    schema_cache: dict[str, set[str] | None] = {}
+    file_cache: dict[Path, tuple[list[str], list[bool]]] = {}
+    seen: set[tuple[str, Path, int]] = set()
+
+    for actor_id, path, lineno in actor_occurrences:
+        key = (actor_id, path, lineno)
+        if key in seen:
+            continue
+        seen.add(key)
+
+        if actor_id not in schema_cache:
+            schema_cache[actor_id] = fetch_input_schema_properties(actor_id)
+        properties = schema_cache[actor_id]
+        if properties is None:
+            continue
+
+        if path not in file_cache:
+            lines = path.read_text(encoding="utf-8").splitlines()
+            file_cache[path] = (lines, compute_fence_flags(lines))
+        lines, fence_flags = file_cache[path]
+
+        anchor_idx = lineno - 1
+        if anchor_idx >= len(lines) or not fence_flags[anchor_idx]:
+            continue  # actor mention isn't inside a fenced code block
+
+        found = find_input_json(lines, fence_flags, anchor_idx)
+        if found is None:
+            continue
+        parsed, flag_idx = found
+
+        for field in parsed:
+            if field not in properties:
+                warnings.append(
+                    f"warning: {rel(path)}:{flag_idx + 1}: input field '{field}' "
+                    f"is not in {actor_id}'s current input schema — the actor "
+                    "will ignore or reject it; check `apify actors info "
+                    f"{actor_id} --input`"
+                )
+    return warnings
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument(
@@ -424,6 +575,7 @@ def main() -> int:
         online_errors, online_warnings = check_actors_online(online_actor_refs)
         errors.extend(online_errors)
         warnings.extend(online_warnings)
+        warnings.extend(check_input_schema(online_actor_refs))
 
     for warning in warnings:
         print(warning, file=sys.stderr)
