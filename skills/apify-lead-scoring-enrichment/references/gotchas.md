@@ -13,7 +13,7 @@ with all three scoring Actors + Path A enrichment:
 | `apify/website-content-crawler` (depth 0) | $0.20 – $1 | Homepage-only. Higher depth multiplies. |
 | `vdrmota/contact-info-scraper` (scoring, add-on OFF) | $2 – $5 | Fetches multiple pages per domain. |
 | `vdrmota/contact-info-scraper` (Path A, add-on ON) | **`max_leads × domains × ~$0.03–$0.10`** | Multiplier. 5 leads × 100 domains ≈ $15–$50, charged only for leads actually found. |
-| `scalelist/bulk-email-finder-dep` | $1 – $4 (fallback only) | Only invoked for leads with a name but no email. |
+| `clearpath/email-finder-api` | $1 – $4 (fallback only) | Only invoked for leads with a name but no email. |
 | `apify/google-search-scraper` | $0.30 – $1 | 5 results × 100 domains. |
 | `apify/ai-web-scraper` | $2 – $8 | LLM cost dominates; scales with blog-post count. |
 
@@ -73,29 +73,31 @@ The Actor scrapes visible page text; it doesn't crack:
 - Contact forms with no fallback mailto.
 - Emails hidden behind "click to reveal" buttons.
 
-Path A's fallback to `scalelist/bulk-email-finder-dep` covers most of
+Path A's fallback to `clearpath/email-finder-api` covers most of
 these. If a domain still returns 0 emails after fallback, the company is
 probably filtering all inbound — mark the lead as "phone-only" or "form
 submission required" in your outreach plan.
 
-## Bulk Email Finder input shape
+## Email Finder API input shape
 
-`scalelist/bulk-email-finder-dep` takes a single required key `leads`
-holding an array of snake_case objects:
+`clearpath/email-finder-api` takes a single required key `people`
+holding an array of camelCase objects:
 
 ```json
-{ "leads": [{ "first_name": "Jane", "last_name": "Doe", "company_domain": "acme.com" }] }
+{ "people": [{ "firstName": "Jane", "surname": "Doe", "domain": "acme.com" }] }
 ```
 
-Common wrong shapes (all reject):
-- `{ "people": [...] }` — wrong outer key.
-- `{ "firstNames": [], "lastNames": [], "domains": [] }` — flat pluralized arrays.
-- Per-lead objects with `firstName` / `lastName` — camelCase is rejected.
+Common wrong shapes (all reject or silently no-op):
+- `{ "leads": [...] }` — wrong outer key.
+- `{ "first_name", "last_name", "company_domain" }` — snake_case field names
+  from other email-finder Actors are not recognized.
+- Omitting `domain` — the Actor also accepts a company name there
+  (it resolves the domain itself), but a bare domain is more reliable.
 
 If a call 400s, re-fetch the schema before guessing:
 
 ```bash
-apify actors info scalelist/bulk-email-finder-dep --input \
+apify actors info clearpath/email-finder-api --input \
   --user-agent apify-awesome-skills/apify-lead-scoring-enrichment \
   --json 2>/dev/null
 ```

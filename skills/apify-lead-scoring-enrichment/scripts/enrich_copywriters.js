@@ -3,7 +3,7 @@
 //   1. Google-search site:{domain} blog → apify/google-search-scraper
 //   2. Extract author names from top blog posts → apify/ai-web-scraper
 //      (with the get-author-name-from-blog-post example input)
-//   3. Deduplicate authors, then resolve emails → scalelist/bulk-email-finder-dep
+//   3. Deduplicate authors, then resolve emails → clearpath/email-finder-api
 //
 // Usage:
 //   node --env-file=.env scripts/enrich_copywriters.js \
@@ -153,32 +153,32 @@ if (!finderPairs.length) {
     process.exit(0);
 }
 
-// ---- Step 3: email finder on (first_name, last_name, company_domain) triples.
-console.error(`→ Running scalelist/bulk-email-finder-dep for ${finderPairs.length} authors…`);
+// ---- Step 3: email finder on (firstName, surname, domain) triples.
+console.error(`→ Running clearpath/email-finder-api for ${finderPairs.length} authors…`);
 let finderItems = [];
 try {
     finderItems = await runActorAndGetItems(
-        'scalelist/bulk-email-finder-dep',
+        'clearpath/email-finder-api',
         {
-            leads: finderPairs.map(({ firstName, lastName, domain }) => ({
-                first_name: firstName,
-                last_name: lastName,
-                company_domain: domain,
+            people: finderPairs.map(({ firstName, lastName, domain }) => ({
+                firstName,
+                surname: lastName,
+                domain,
             })),
         },
         { sourceTag: 'copywriters_email', timeoutSec: 1200 },
     );
 } catch (e) {
-    console.error(`  bulk-email-finder-dep failed: ${e.message}. Continuing with no emails.`);
+    console.error(`  email-finder-api failed: ${e.message}. Continuing with no emails.`);
 }
 console.error(`  email-finder: ${finderItems.length} items back.`);
 
 for (const item of finderItems) {
     const email = item.email || item.emailAddress;
     if (!email) continue;
-    const domain = (item.company_domain || item.domain || '').toLowerCase();
-    const first = (item.first_name || item.firstName || '').toLowerCase();
-    const last = (item.last_name || item.lastName || '').toLowerCase();
+    const domain = (item.domain || item.companyDomain || '').toLowerCase();
+    const first = (item.firstName || item.first_name || '').toLowerCase();
+    const last = (item.surname || item.lastName || item.last_name || '').toLowerCase();
     const match = finderPairs.find((p) => p.domain === domain && p.firstName.toLowerCase() === first && p.lastName.toLowerCase() === last);
     if (!match) continue;
     sidecar[match.canon].emails.push(email);

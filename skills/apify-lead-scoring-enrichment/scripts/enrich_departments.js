@@ -2,7 +2,7 @@
 // Calls vdrmota/contact-info-scraper with its "Business leads enrichment"
 // add-on enabled (maximumLeadsEnrichmentRecords + leadsEnrichmentDepartments)
 // to return actual people per domain. For any lead that comes back without a
-// resolved email, falls back to scalelist/bulk-email-finder-dep on the
+// resolved email, falls back to clearpath/email-finder-api on the
 // (firstName, lastName, domain) triple.
 //
 // Usage:
@@ -142,38 +142,38 @@ for (const [canon, entry] of Object.entries(sidecar)) {
 }
 
 if (noEmailLeads.length) {
-    console.error(`→ Fallback: ${noEmailLeads.length} leads have no email → scalelist/bulk-email-finder-dep…`);
+    console.error(`→ Fallback: ${noEmailLeads.length} leads have no email → clearpath/email-finder-api…`);
     let finderItems = [];
     try {
         finderItems = await runActorAndGetItems(
-            'scalelist/bulk-email-finder-dep',
+            'clearpath/email-finder-api',
             {
-                leads: noEmailLeads.map(({ lead, domain }) => ({
-                    first_name: lead.firstName,
-                    last_name: lead.lastName,
-                    company_domain: domain,
+                people: noEmailLeads.map(({ lead, domain }) => ({
+                    firstName: lead.firstName,
+                    surname: lead.lastName,
+                    domain,
                 })),
             },
             { sourceTag: 'departments_fallback', timeoutSec: 900 },
         );
     } catch (e) {
-        console.error(`  bulk-email-finder-dep failed: ${e.message}. Continuing without fallback data.`);
+        console.error(`  email-finder-api failed: ${e.message}. Continuing without fallback data.`);
     }
     console.error(`  email-finder: ${finderItems.length} items back.`);
 
     for (const item of finderItems) {
         const email = item.email || item.emailAddress;
         if (!email) continue;
-        const domain = (item.company_domain || item.domain || '').toLowerCase();
-        const first = (item.first_name || item.firstName || '').toLowerCase();
-        const last = (item.last_name || item.lastName || '').toLowerCase();
+        const domain = (item.domain || item.companyDomain || '').toLowerCase();
+        const first = (item.firstName || item.first_name || '').toLowerCase();
+        const last = (item.surname || item.lastName || item.last_name || '').toLowerCase();
         const match = noEmailLeads.find(({ lead, domain: d }) =>
             d === domain
             && lead.firstName.toLowerCase() === first
             && lead.lastName.toLowerCase() === last);
         if (!match) continue;
         match.lead.email = email;
-        match.lead.source = 'bulk-email-finder-dep';
+        match.lead.source = 'email-finder-api';
         sidecar[match.canon].emails.push(email);
     }
 

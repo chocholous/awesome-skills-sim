@@ -121,38 +121,40 @@ field-name variants defensively.
 
 ## Enrichment Actors
 
-### `scalelist/bulk-email-finder-dep` (community)
+### `clearpath/email-finder-api` (community)
 
 **Intent:** Given a first name, last name, and company domain, return a
 verified business email. This skill uses it **only as a fallback** — when
 `vdrmota/contact-info-scraper` (Path A) or the copywriter chain (Path B)
 returns a lead whose name is known but whose email wasn't discovered.
-**Cost:** pay-per-found-email.
-**Input shape (single required key `leads`):**
+**Cost:** pay-per-event (actor start + per pattern tested), roughly
+$0.016/person in the default "optimized" mode.
+**Input shape (single required key `people`):**
 
 ```json
 {
-  "leads": [
+  "people": [
     {
-      "first_name": "Jane",
-      "last_name": "Doe",
-      "company_domain": "acme.com",
-      "company_name": "Acme Corp"
+      "firstName": "Jane",
+      "surname": "Doe",
+      "domain": "acme.com"
     }
   ]
 }
 ```
 
-Field names are **snake_case** and the required per-lead fields are
-`first_name` + `last_name`. `company_domain` is preferred over
-`company_name` for better match rate (per the Actor's own schema
-description). Do not send the pluralized flat-array shapes seen in
-older skills — this Actor rejects them.
+Field names are **camelCase**, and the required per-person fields are
+`firstName` + `surname` + `domain`. The Actor also accepts a company
+name in place of `domain` (it resolves the domain automatically), but
+this skill always passes a bare domain for a more reliable match. Do
+not send the snake_case `leads` shape used by older/unrelated email
+finder Actors — this Actor rejects it.
 
-**Output:** dataset item per input lead with `email` (or `null` when
-unresolved), plus echoes of the input identifiers. Field names in the
-output can be either snake_case or camelCase depending on Actor
-version; `enrich_departments.js` and `enrich_copywriters.js` read both.
+**Output:** dataset item per input person with `firstName`, `surname`,
+`domain`, `email` (empty when unresolved), `status`, `isDeliverable`,
+`overallScore`, and `alternativeEmails`. Field names are camelCase;
+`enrich_departments.js` and `enrich_copywriters.js` also fall back to
+snake_case variants defensively.
 
 **When to run the fallback:** only for leads with a first+last name and
 no email. Do **not** call this Actor to enumerate contacts at a domain —
