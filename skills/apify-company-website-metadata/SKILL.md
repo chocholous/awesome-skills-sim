@@ -4,14 +4,7 @@ description: Extract source-backed company name, description, and industry candi
 author: BRAINIALL
 author_url: https://www.brainiall.com
 metadata:
-  keywords:
-    - company-enrichment
-    - website-metadata
-    - company-domain
-    - crm
-    - provenance
-    - data-quality
-    - apify
+  keywords: "company-enrichment, website-metadata, company-domain, crm, provenance, data-quality, apify"
 ---
 
 # Company website metadata for CRM review
