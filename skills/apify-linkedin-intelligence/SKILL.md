@@ -3,21 +3,7 @@ name: apify-linkedin-intelligence
 description: Turn LinkedIn into a B2B go-to-market data source using Apify Actors across the three LinkedIn data pillars — company firmographics, people profiles, and job postings. Use for TAM sizing (count and size companies in a market), prospect / lead list building (find decision-makers by title, company, seniority, geo), headcount benchmarking (compare employee counts and growth across competitors), and hiring-signal selling (turn new job postings into buying signals and timed outreach). Trigger phrases include "size my TAM on LinkedIn", "build a prospect list of <title> at <companies>", "find decision makers / ICP contacts", "how many employees does <company> have", "benchmark headcount vs competitors", "who is hiring for <role>", "hiring signals for sales", "LinkedIn company / people / jobs scraper", or "enrich these LinkedIn URLs". Chains firmographics + people + jobs instead of a single scraper, and confirms input schemas before running because LinkedIn Actor inputs drift.
 metadata:
   category: data-extraction
-  keywords:
-    - linkedin
-    - b2b
-    - lead-generation
-    - prospecting
-    - tam-sizing
-    - firmographics
-    - headcount
-    - hiring-signals
-    - sales-intelligence
-    - people-profiles
-    - job-postings
-    - icp
-    - go-to-market
-    - apollo-alternative
+  keywords: "linkedin, b2b, lead-generation, prospecting, tam-sizing, firmographics, headcount, hiring-signals, sales-intelligence, people-profiles, job-postings, icp, go-to-market, apollo-alternative"
 author: Yoghesh D
 author_url: https://github.com/yogeshd
 ---
