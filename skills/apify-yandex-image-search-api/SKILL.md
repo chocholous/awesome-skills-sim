@@ -6,6 +6,8 @@ author_url: https://github.com/johnisanerd
 license: MIT
 metadata:
   version: "1.0"
+  category: data-extraction
+  keywords: "yandex image search api, yandex images api, image search, image scraping, full-size image url, russian search engine, reverse image lookup, image dataset"
 ---
 
 # Yandex Image Search API: Full-Size Image URLs as JSON
