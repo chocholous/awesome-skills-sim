@@ -6,22 +6,7 @@ author_url: https://github.com/apifyforge
 license: MIT
 metadata:
   version: "1.0"
-  keywords:
-    - monitoring
-    - competitor-tracking
-    - market-intelligence
-    - price-tracking
-    - change-detection
-    - tiktok
-    - instagram
-    - amazon
-    - airbnb
-    - zillow
-    - linkedin
-    - google-maps
-    - trends
-    - watchlist
-    - scheduling
+  keywords: "monitoring, competitor-tracking, market-intelligence, price-tracking, change-detection, tiktok, instagram, amazon, airbnb, zillow, linkedin, google-maps, trends, watchlist, scheduling"
 ---
 
 # Market Monitor — track competitors and markets over time
