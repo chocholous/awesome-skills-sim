@@ -108,8 +108,7 @@ Update `.actor/actor.json`, `.actor/input_schema.json`, `.actor/output_schema.js
 ### Step 7 — Test locally, then deploy
 
 ```bash
-apify run --purge --user-agent apify-awesome-skills/apify-orchestrator-actor-development \
-  --json 2>/dev/null
+apify run --purge
 apify push
 ```
 
@@ -142,7 +141,7 @@ Local Runs of the orchestrator make **real** child Runs on the Apify platform (t
 
 ## Commands
 
-Every apify CLI invocation below includes `--user-agent apify-awesome-skills/apify-orchestrator-actor-development` for telemetry attribution, plus `--json` and `2>/dev/null` for machine-readable output.
+Actor-call and dataset-read commands (`actors search`, `actors info`, `call`, `runs ls`) include `--user-agent apify-awesome-skills/apify-orchestrator-actor-development`, `--json`, and `2>/dev/null` for telemetry attribution and machine-readable output. Local-dev commands (`apify run`, `apify create`, `apify push`, `apify validate-schema`, `apify login`/`logout`/`info`) take none of those flags — the CLI doesn't support them there.
 
 ```bash
 # Bootstrap
@@ -150,10 +149,8 @@ apify create <name> -t ts_empty
 npm install apify-orchestrator
 
 # Local development
-apify run --user-agent apify-awesome-skills/apify-orchestrator-actor-development \
-  --json 2>/dev/null
-apify run --purge --user-agent apify-awesome-skills/apify-orchestrator-actor-development \
-  --json 2>/dev/null
+apify run
+apify run --purge
 apify validate-schema
 
 # Discovery (Actor search + schema fetch)
