@@ -11,6 +11,9 @@ description: >-
   especially when they want it programmatically without an Ahrefs / Semrush / Helium 10 subscription.
 author: doesaiknow
 author_url: https://apify.com/doesaiknow
+metadata:
+  category: data-extraction
+  keywords: "seo, keyword research, search volume, cpc, keyword clustering, topical map, competitor keywords, keyword gap, backlinks, referring domains, aeo, geo, ai search visibility, amazon keywords, reverse-asin"
 ---
 
 # doesaiknow SEO suite
