@@ -6,6 +6,22 @@ author_url: https://github.com/apifyforge
 license: MIT
 metadata:
   version: "1.0"
+  keywords:
+    - monitoring
+    - competitor-tracking
+    - market-intelligence
+    - price-tracking
+    - change-detection
+    - tiktok
+    - instagram
+    - amazon
+    - airbnb
+    - zillow
+    - linkedin
+    - google-maps
+    - trends
+    - watchlist
+    - scheduling
 ---
 
 # Market Monitor — track competitors and markets over time
@@ -111,8 +127,8 @@ apify actors search "KEYWORDS" --json --limit 10 --user-agent apify-awesome-skil
 # Fetch results (first peek)
 apify datasets get-items DATASET_ID --limit 5 --format json --user-agent apify-awesome-skills/apify-market-monitor 2>/dev/null
 
-# Full export to CSV
-apify datasets get-items DATASET_ID --format csv --user-agent apify-awesome-skills/apify-market-monitor 2>/dev/null > output.csv
+# Full export
+apify datasets get-items DATASET_ID --format json --user-agent apify-awesome-skills/apify-market-monitor 2>/dev/null > output.json
 ```
 
 ### Option B: Apify MCP connector
