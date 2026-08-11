@@ -76,8 +76,9 @@ apify actors call apify/web-scraper \
   --json 2>/dev/null
 ```
 
-CI checks these rules automatically via `scripts/lint_telemetry.sh`. Run it locally before opening a PR:
+CI checks these rules automatically via `scripts/lint_telemetry.sh`, and skill references (paths, Apify Store actors, URLs) via `scripts/lint_references.py` — both run on the skills your PR changes. Run them locally before opening a PR:
 
 ```bash
-bash scripts/lint_telemetry.sh
+bash scripts/lint_telemetry.sh skills/apify-<name>
+uv run scripts/lint_references.py skills/apify-<name> --check-actors skills/apify-<name>
 ```
