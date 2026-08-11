@@ -57,6 +57,27 @@
       "category": "data-extraction"
     },
     {
+      "name": "apify-app-store-intelligence",
+      "source": "./skills/apify-app-store-intelligence",
+      "skills": "./",
+      "description": "App-store intelligence and ASO research across the Apple App Store, Google Play, and the Shopify App Store. Pull app details, exact ratings and ratings histograms, customer reviews, and keyword/category rankings, then compare an app against its competitors. Use when the user asks to scrape App Store or Google Play data, track app reviews or ratings over time, do ASO / app-store keyword rank research, monitor competitor apps, mine app reviews for sentiment or feature requests, or research the Shopify app ecosystem. Requires the Apify CLI or the Apify MCP server.",
+      "keywords": [
+        "app-store",
+        "google-play",
+        "shopify-app-store",
+        "aso",
+        "app-reviews",
+        "ratings",
+        "keyword-rankings",
+        "ios",
+        "android",
+        "competitor-analysis",
+        "review-mining",
+        "apify"
+      ],
+      "category": "data-extraction"
+    },
+    {
       "name": "apify-booking-host-leads",
       "source": "./skills/apify-booking-host-leads",
       "skills": "./",
@@ -203,6 +224,32 @@
       "category": "data-extraction"
     },
     {
+      "name": "apify-jobs-data",
+      "source": "./skills/apify-jobs-data",
+      "skills": "./",
+      "description": "Extract clean, de-noised job-posting data from LinkedIn, Indeed, Glassdoor, Google Jobs, and 20+ boards in one Apify run — deduplicated across boards with ghost jobs and reposts removed and fields normalized — then analyze it (deduped hiring demand, in-demand skills, coverage-labeled salary distribution), export it (CSV / JSON / Apify dataset) for dashboards and BI, or rank it against a résumé. Use when the user asks to scrape job postings, build a job dataset, analyze hiring demand or in-demand skills or salary ranges for a role or market, export job data for a dashboard or spreadsheet, dedupe job listings across boards, filter out ghost or fake jobs, or rank jobs by fit to a résumé. Triggers - \"scrape job postings for X\", \"what skills are in demand for Y\", \"salary range for Z in [location]\", \"export job data to CSV\", \"filter out the ghost jobs\", \"which of these jobs fit my résumé\".",
+      "keywords": [
+        "jobs",
+        "job-data",
+        "job-postings",
+        "job-scraping",
+        "hiring-demand",
+        "salary",
+        "skills-in-demand",
+        "market-analysis",
+        "dataset-export",
+        "ghost-jobs",
+        "resume-fit",
+        "linkedin-jobs",
+        "indeed",
+        "glassdoor",
+        "google-jobs",
+        "data-extraction",
+        "apify"
+      ],
+      "category": "data-extraction"
+    },
+    {
       "name": "apify-link-prospecting-outreach",
       "source": "./skills/apify-link-prospecting-outreach",
       "skills": "./",
@@ -288,6 +335,27 @@
         "apify",
         "apollo-alternative",
         "hunter-alternative"
+      ],
+      "category": "data-extraction"
+    },
+    {
+      "name": "apify-x-twitter-data",
+      "source": "./skills/apify-x-twitter-data",
+      "skills": "./",
+      "description": "Collect public X/Twitter tweets, timelines, search results, followers, following, lists, and community member datasets with Xquik Apify Actors. Use when user asks for X/Twitter data extraction, social listening, audience analysis, creator research, follower exports, tweet exports, or list/community analysis.",
+      "keywords": [
+        "x",
+        "twitter",
+        "tweets",
+        "followers",
+        "following",
+        "social-listening",
+        "audience-analysis",
+        "creator-research",
+        "hashtags",
+        "lists",
+        "communities",
+        "exports"
       ],
       "category": "data-extraction"
     },
