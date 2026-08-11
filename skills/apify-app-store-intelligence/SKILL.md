@@ -3,6 +3,9 @@ name: apify-app-store-intelligence
 description: App-store intelligence and ASO research across the Apple App Store, Google Play, and the Shopify App Store. Pull app details, exact ratings and ratings histograms, customer reviews, and keyword/category rankings, then compare an app against its competitors. Use when the user asks to scrape App Store or Google Play data, track app reviews or ratings over time, do ASO / app-store keyword rank research, monitor competitor apps, mine app reviews for sentiment or feature requests, or research the Shopify app ecosystem. Requires the Apify CLI or the Apify MCP server.
 author: FreshActors
 author_url: https://github.com/Freshactors
+metadata:
+  category: data-extraction
+  keywords: "app store scraper, google play scraper, shopify app store, aso research, app reviews, app ratings, keyword rankings, competitor apps, review mining, app store intelligence"
 ---
 
 # App Store Intelligence (Apple App Store · Google Play · Shopify App Store)
