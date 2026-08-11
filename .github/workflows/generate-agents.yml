@@ -24,6 +24,8 @@ jobs:
         uses: astral-sh/setup-uv@v4
 
       - name: Check PR scope (one skill per PR, no out-of-bounds files)
+        id: scope
+        continue-on-error: true
         env:
           BASE_REF: ${{ github.event.pull_request.base.ref }}
           PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
@@ -95,6 +97,8 @@ jobs:
           fi
 
       - name: Check PR checklist
+        id: checklist
+        continue-on-error: true
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
         run: |
@@ -130,6 +134,8 @@ jobs:
           echo "$SKILL_DIRS" | sed 's/^/  - /'
 
       - name: Lint telemetry (changed skills)
+        id: telemetry
+        continue-on-error: true
         run: |
           if [ "${{ steps.changed.outputs.n_skills }}" -eq 0 ]; then
             echo "No skill directories changed — skipping telemetry lint."
@@ -138,6 +144,8 @@ jobs:
           bash scripts/lint_telemetry.sh ${{ steps.changed.outputs.skill_dirs }}
 
       - name: Lint references (changed skills)
+        id: references
+        continue-on-error: true
         run: |
           N_SKILLS="${{ steps.changed.outputs.n_skills }}"
           if [ "$N_SKILLS" -eq 0 ]; then
@@ -152,7 +160,22 @@ jobs:
           fi
 
       - name: Validate skills and run a trial generation
+        id: generator
+        continue-on-error: true
         run: uv run scripts/generate_agents.py
+
+      - name: Aggregate verdict
+        env:
+          V_SCOPE: ${{ steps.scope.outcome }}
+          V_CHECKLIST: ${{ steps.checklist.outcome }}
+          V_TELEMETRY: ${{ steps.telemetry.outcome }}
+          V_REFERENCES: ${{ steps.references.outcome }}
+          V_GENERATOR: ${{ steps.generator.outcome }}
+        run: |
+          echo "VERDICT scope=$V_SCOPE checklist=$V_CHECKLIST telemetry=$V_TELEMETRY references=$V_REFERENCES generator=$V_GENERATOR"
+          if [ "$V_SCOPE" = failure ] || [ "$V_CHECKLIST" = failure ] || [ "$V_TELEMETRY" = failure ] || [ "$V_REFERENCES" = failure ] || [ "$V_GENERATOR" = failure ]; then
+            exit 1
+          fi
 
   regenerate:
     if: github.event_name == 'push' && github.actor != 'awesome-skills-sim-bot[bot]'
