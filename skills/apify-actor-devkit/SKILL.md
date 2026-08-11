@@ -5,6 +5,8 @@ author: apifyforge
 author_url: https://github.com/apifyforge
 license: MIT
 metadata:
+  category: data-extraction
+  keywords: "developer-tools, actor-testing, ab-testing, input-validation, pipeline-validation, regression-detection, ci-gate, quality-monitoring, compliance, gdpr, fleet-analytics, apify-developers"
   version: "1.0"
 ---
 
