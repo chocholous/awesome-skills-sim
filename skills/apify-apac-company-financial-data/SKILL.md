@@ -4,25 +4,7 @@ description: Extract APAC company, exchange, and financial-disclosure data via A
 author: NexGenData
 author_url: https://apify.com/nexgendata
 metadata:
-  keywords:
-    - apac
-    - asia
-    - company-registry
-    - korea
-    - japan
-    - taiwan
-    - china
-    - hong-kong
-    - singapore
-    - india
-    - stock-screener
-    - ipo
-    - disclosures
-    - insider-trading
-    - edinet
-    - sgx
-    - hkex
-    - enforcement
+  keywords: "apac, asia, company-registry, korea, japan, taiwan, china, hong-kong, singapore, india, stock-screener, ipo, disclosures, insider-trading, edinet, sgx, hkex, enforcement"
 ---
 
 # APAC Company & Financial Data
