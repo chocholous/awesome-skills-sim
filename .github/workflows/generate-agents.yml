@@ -52,7 +52,7 @@ jobs:
           # Allowed paths fall into two buckets:
           #   - Skill submissions: skills/apify-<name>/ only — the catalog is generated.
           #   - Repo maintenance:  root meta files, CI, scripts, generated agents/.
-          ALLOWED='^(skills/apify-[^/]+/|\.claude-plugin/marketplace\.json$|LICENSE$|README\.md$|CONTRIBUTING\.md$|SECURITY\.md$|CODE_OF_CONDUCT\.md$|\.gitignore$|\.github/|scripts/|agents/)'
+          ALLOWED='^(skills/apify-[^/]+/|skills/_template/|\.claude-plugin/marketplace\.json$|LICENSE$|README\.md$|CONTRIBUTING\.md$|SECURITY\.md$|CODE_OF_CONDUCT\.md$|\.gitignore$|\.github/|scripts/|agents/)'
           OUT_OF_BOUNDS=$(echo "$CHANGED" | grep -vE "$ALLOWED" || true)
 
           FAIL=0
