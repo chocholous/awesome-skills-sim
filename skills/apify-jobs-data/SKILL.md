@@ -3,6 +3,9 @@ name: apify-jobs-data
 description: Extract clean, de-noised job-posting data from LinkedIn, Indeed, Glassdoor, Google Jobs, and 20+ boards in one Apify run — deduplicated across boards with ghost jobs and reposts removed and fields normalized — then analyze it (deduped hiring demand, in-demand skills, coverage-labeled salary distribution), export it (CSV / JSON / Apify dataset) for dashboards and BI, or rank it against a résumé. Use when the user asks to scrape job postings, build a job dataset, analyze hiring demand or in-demand skills or salary ranges for a role or market, export job data for a dashboard or spreadsheet, dedupe job listings across boards, filter out ghost or fake jobs, or rank jobs by fit to a résumé. Triggers - "scrape job postings for X", "what skills are in demand for Y", "salary range for Z in [location]", "export job data to CSV", "filter out the ghost jobs", "which of these jobs fit my résumé".
 author: Oleg Martinez
 author_url: https://github.com/ezumyn-aliegm
+metadata:
+  category: data-extraction
+  keywords: "jobs, job-data, job-postings, job-scraping, hiring-demand, salary, skills-in-demand, market-analysis, dataset-export, ghost-jobs, resume-fit, linkedin-jobs, indeed, glassdoor, google-jobs, data-extraction, apify"
 ---
 
 # Jobs Data
