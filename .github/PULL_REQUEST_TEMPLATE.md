@@ -8,7 +8,7 @@
 
 - [ ] PR adds **one** skill in `skills/apify-<name>/` (no other file changes except `.claude-plugin/marketplace.json`)
 - [ ] `SKILL.md` frontmatter has `name` (matches folder, `apify-` prefix) and `description` (≤ 1024 chars)
-- [ ] Added entry to `.claude-plugin/marketplace.json`
+- [ ] My PR does **not** modify `.claude-plugin/marketplace.json`, `agents/AGENTS.md` or the README table (they are generated)
 - [ ] Tested the skill end-to-end at least once
 
 ## Notes
