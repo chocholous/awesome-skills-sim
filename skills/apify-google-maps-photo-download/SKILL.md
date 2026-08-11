@@ -6,6 +6,7 @@ author_url: https://github.com/johnisanerd
 license: MIT
 metadata:
   version: "1.0"
+  keywords: "google maps photos, bulk photo download, place photos api, google maps images api, gallery scraping, photo dataset, apify actor"
 ---
 
 # Bulk Google Maps Photo Download, One Row Per Photo
