@@ -26,14 +26,23 @@ MAX_SPAN=40  # safety cap for a single command extent scan
 # Patterns that signal an apify CLI invocation
 CLI_PATTERNS=(
   "apify actors call"
-  "apify actors run"
+  "apify actors run"   # not a real command in apify-cli 1.8.0 (`apify call`/`apify
+                       # actors call` are the aliased remote-run pair); kept as a
+                       # safety net in case it is ever added
   "apify actors info"
   "apify datasets get-items"
   "apify call"
+  "apify run"
 )
-# NOTE: `apify run` is deliberately NOT a pattern — it runs an actor locally
-# during development and the real CLI has no --json/--user-agent flags there
-# (verified against apify-cli 1.7/1.8); demanding them forces broken commands.
+# `apify run` runs an Actor locally. It DOES accept --user-agent: the flag is
+# global (handled for every command in the CLI's own _run(), feeding
+# telemetryData.userAgent, with APIFY_CLI_USER_AGENT as the env fallback), it is
+# just absent from --help. Rule 1 therefore applies to it and dropping it here
+# would silently lose telemetry attribution for local runs.
+# It does NOT accept --json (that flag is per-command via enableJsonFlag, and
+# `run` does not enable it — the parser answers "Unknown flag provided"), and
+# 2>/dev/null would hide the live run log, so Rules 2 and 3 are waived below.
+# Measured against apify-cli 1.8.0 at parser level, not from --help.
 
 # Find SKILL.md files: all under skills/ by default, or only under the
 # dirs/files passed as arguments (used by CI to lint just the skills a PR
@@ -101,12 +110,14 @@ for file in "${SKILL_FILES[@]}"; do
     # the pattern must not be alphanumeric, so "apify run" does not match
     # "apify runs ls".
     matched=0
+    matched_pat=""
     for pat in "${CLI_PATTERNS[@]}"; do
       if [[ "$line" == *"$pat"* ]]; then
         rest="${line#*"$pat"}"
         first="${rest:0:1}"
         if [[ -z "$first" ]] || [[ ! "$first" =~ [a-zA-Z0-9-] ]]; then
           matched=1
+          matched_pat="$pat"
           break
         fi
       fi
@@ -123,6 +134,10 @@ for file in "${SKILL_FILES[@]}"; do
     has_readme=0
     has_info_input=0
     has_csv=0
+    # `apify run` (local run): Rule 1 applies, Rules 2 and 3 do not — see the
+    # note at CLI_PATTERNS.
+    is_local_run=0
+    [ "$matched_pat" = "apify run" ] && is_local_run=1
 
     for (( j=i; j<total && j<i+MAX_SPAN; j++ )); do
       window_line="${LINES[$j]}"
@@ -135,8 +150,12 @@ for file in "${SKILL_FILES[@]}"; do
         next_cmd=0
         for pat in "${CLI_PATTERNS[@]}"; do
           if [[ "$window_line" == *"$pat"* ]]; then
-            next_cmd=1
-            break
+            rest="${window_line#*"$pat"}"
+            first="${rest:0:1}"
+            if [[ -z "$first" ]] || [[ ! "$first" =~ [a-zA-Z0-9-] ]]; then
+              next_cmd=1
+              break
+            fi
           fi
         done
         [ "$next_cmd" -eq 1 ] && break
@@ -173,7 +192,7 @@ for file in "${SKILL_FILES[@]}"; do
     # returns the bare input schema (adding --json buries it in the full
     # actor object). CSV export is allowed but downgraded to a warning —
     # the skill must handle non-JSON output deliberately.
-    if [ "$has_readme" -eq 0 ] && [ "$has_info_input" -eq 0 ]; then
+    if [ "$has_readme" -eq 0 ] && [ "$has_info_input" -eq 0 ] && [ "$is_local_run" -eq 0 ]; then
       if [ "$found_json" -eq 0 ]; then
         if [ "$has_csv" -eq 1 ]; then
           echo "lint warning: $file:$lineno: --format csv output — allowed, but make sure the skill handles non-JSON output deliberately (default contract is --json)"
@@ -185,7 +204,7 @@ for file in "${SKILL_FILES[@]}"; do
         fi
       fi
     fi
-    if [ "$has_readme" -eq 0 ] && [ "$found_stderr" -eq 0 ]; then
+    if [ "$has_readme" -eq 0 ] && [ "$is_local_run" -eq 0 ] && [ "$found_stderr" -eq 0 ]; then
       echo "lint: $file:$lineno: missing 2>/dev/null stderr redirect"
       echo "      offending line: $clean_line"
       FAIL=$(( FAIL + 1 ))
@@ -211,6 +230,7 @@ if [ "$FAIL" -gt 0 ]; then
   echo "      continuation lines (before the next command or blank line)."
   echo "      Exceptions: --readme commands are exempt from --json and 2>/dev/null;"
   echo "      'actors info --input' (schema fetch) is exempt from --json;"
+  echo "      'apify run' (local run) needs --user-agent but takes no --json;"
   echo "      --format csv is a warning, not an error."
   echo "      See $CONTRIB_REF § 'Telemetry on CLI commands' for details."
   exit 1
