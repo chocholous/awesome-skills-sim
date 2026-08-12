@@ -128,8 +128,22 @@ PLACEHOLDER_SEGMENTS = {
 # Actors. The gate never meets them because it only reads routing-table cells;
 # the prose code-span scan below does.
 NON_ACTOR_OWNERS = {"openrouter"}       # LLM router namespace (`openrouter/auto`)
-NON_ACTOR_IDS = {"apify/log"}           # the @apify/log npm package, written without its @ scope
 UA_PRODUCT = "apify-awesome-skills"     # this repo's own User-Agent product token
+
+# Do not delete this set without re-reading why it exists.
+#
+# `apify/log` is the npm package @apify/log, which the docs write without its
+# leading @ scope — see apify-orchestrator-actor-development/SKILL.md:138 and
+# references/logging.md. It is a real, maintained package, but the Apify Actor
+# API answers 404 for it, because it is not an Actor. Drop this entry and every
+# weekly report gains a permanent false "Actor no longer exists" line for a
+# package the skill is right to recommend.
+#
+# It is the only hardcoded name in this file. A general rule (npm scope written
+# without its @) was considered and rejected: it cannot be told apart from a
+# genuine `owner/name` Actor reference without a second source of truth. If this
+# set ever grows past a handful of entries, that is the signal to revisit.
+NON_ACTOR_IDS = {"apify/log"}
 
 # Finding kinds, in report order. Value = human-readable section heading.
 FINDING_KINDS = {
