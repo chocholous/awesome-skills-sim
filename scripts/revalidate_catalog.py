@@ -10,9 +10,21 @@ skills periodically and reports rot that appeared after merge: actors that got
 deprecated, made private or deleted, author pages that vanished, external links
 that died.
 
-Extraction and classification are reused from lint_references (repo-path /
-actor-id / store-url / apify-url), so both tools always agree on what a
-"reference" is. Only the checks and the reporting differ:
+Classification is reused from lint_references (valid_actor_id, store-url
+folding, fence handling), so the two tools agree on what an Actor id *is*. The
+scope is deliberately wider than the PR gate's, because rot does not respect the
+directory layout the gate happens to walk:
+
+  - every *.md file under a skill directory is swept (SKILL.md, references/,
+    reference/, examples/, REGISTRATION/, data/, commands/, AGENTS.md, ...),
+    not just SKILL.md + references/
+  - plugin bundles that ship their own nested skills
+    (skills/<bundle>/skills/<child>/) are swept as skills in their own right and
+    reported under "<bundle>/<child>"
+  - an Actor id written as a bare code span in prose (`owner/name`) counts as a
+    reference, not only ids in routing tables, CLI commands and store URLs
+
+Only the checks and the reporting differ from the gate:
 
   - every finding is a WARNING; the exit code is always 0
   - the output is a report (machine JSON + markdown for a GitHub issue),
@@ -26,9 +38,22 @@ Checks
                         (URLs that only appear inside fenced code blocks are
                         sample payloads, not links — they are not checked)
 
+Not checked here, on purpose: whether a SKILL.md *declares* an author_url at
+all, and whether it declares it as a top-level frontmatter key (a skill that
+nests `author_url:` under `metadata:` has no author for any tool that reads the
+frontmatter flat). Those are structural defects of a single skill, catchable
+before merge, and they belong to the PR-time gate (scripts/lint_references.py,
+the validate-pr workflow), not to a weekly sweep of the live world. So the hole
+is not silent, every run reports how many skills carry no checkable author_url
+and names them in the JSON under `checked.author_urls_skipped`.
+
 Placeholder-looking URLs (example.com, .../idNUMBER, https://…) are skipped, and
 anything the network refuses to answer for (403/429/5xx/timeouts) is reported as
 "unverifiable", not as a finding — a weekly report must not cry wolf.
+
+Findings are one per unique subject (Actor id / URL), with every affected skill
+and every location listed on that row: one dead author page shared by two skills
+is one fix to make and one row to read, not two.
 
 Authors are attributed from the `author_url` frontmatter field. Handles are
 rendered in backticks by default; --mention-authors switches to live @mentions
@@ -38,6 +63,7 @@ Usage:
   uv run scripts/revalidate_catalog.py                        # full catalog, markdown to stdout
   uv run scripts/revalidate_catalog.py --json-out report.json --markdown-out report.md
   uv run scripts/revalidate_catalog.py skills/apify-ecommerce  # subset, for debugging
+  uv run scripts/revalidate_catalog.py skills/apify-financial-services/skills/apify-financial-news
   uv run scripts/revalidate_catalog.py --skip-external         # actors only (fast)
 """
 
@@ -80,10 +106,15 @@ GITHUB_HANDLE_RE = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$")
 
 # Documentation examples that must never be fetched: they are illustrations of a
 # URL shape, not links. Everything below is calibrated against the catalog.
-PLACEHOLDER_HOSTS = {
-    "acme.com", "apifyclone.com", "domain", "example.com", "example.net",
-    "example.org", "localhost", "mydomain.com", "test.com", "www.acme.com",
-    "www.example.com", "yourdomain.com",
+#
+# Reserved by RFC 2606 / RFC 6761 — no host under these can ever be real.
+PLACEHOLDER_TLDS = {"example", "invalid", "localhost", "test"}
+# Fictional companies used in the catalog's sample outputs. Matched on the
+# registrable domain, so blog.acme.com and www.northwind.com are covered too.
+PLACEHOLDER_DOMAINS = {
+    "acme.com", "apifyclone.com", "example.com", "example.net", "example.org",
+    "examplesite.com", "mydomain.com", "northwind.com", "tailspin.com",
+    "test.com", "yourdomain.com",
 }
 PLACEHOLDER_UPPER_RE = re.compile(
     r"(?:YOUR_[A-Z_]+|[A-Z_]*SLUG\b|[A-Z_]*NUMBER\b|PLACEHOLDER|XXXX)"
@@ -92,6 +123,13 @@ PLACEHOLDER_SEGMENTS = {
     "app-name", "company-name", "handle", "keyword", "place_id", "some-handle",
     "subreddit", "username", "yourcompany", "yourhandle",
 }
+
+# `owner/name` shapes that survive lint_references.valid_actor_id but are not
+# Actors. The gate never meets them because it only reads routing-table cells;
+# the prose code-span scan below does.
+NON_ACTOR_OWNERS = {"openrouter"}       # LLM router namespace (`openrouter/auto`)
+NON_ACTOR_IDS = {"apify/log"}           # the @apify/log npm package, written without its @ scope
+UA_PRODUCT = "apify-awesome-skills"     # this repo's own User-Agent product token
 
 # Finding kinds, in report order. Value = human-readable section heading.
 FINDING_KINDS = {
@@ -111,7 +149,9 @@ class Skill:
 
     def __init__(self, path: Path):
         self.path = path
-        self.name = path.name
+        # skills/<bundle>/skills/<child> reads as "<bundle>/<child>"; a
+        # top-level skill keeps its plain directory name.
+        self.name = path.relative_to(lint.SKILLS_DIR).as_posix().replace("/skills/", "/")
         self.author = ""
         self.author_url = ""
         self.files: list[Path] = []
@@ -122,6 +162,10 @@ class Skill:
     @property
     def author_handle(self) -> str:
         return github_handle(self.author_url)
+
+    @property
+    def skill_md(self) -> Path:
+        return self.path / "SKILL.md"
 
 
 def parse_frontmatter(skill_md: Path) -> dict[str, str]:
@@ -162,6 +206,29 @@ def github_handle(url: str) -> str:
     return segments[0]
 
 
+def placeholder_host(host: str) -> bool:
+    """True for hosts that cannot be real (reserved TLD, fictional company)."""
+    labels = host.split(".")
+    if len(labels) < 2 or labels[-1] in PLACEHOLDER_TLDS:
+        return True
+    # Match the registrable domain and every parent, so subdomains of a
+    # fictional company (blog.acme.com, developers.examplesite.com) are caught.
+    return any(".".join(labels[i:]) in PLACEHOLDER_DOMAINS for i in range(len(labels) - 1))
+
+
+def truncated_at_placeholder(raw_url: str, next_char: str) -> bool:
+    """True when the regex stopped inside a templated URL.
+
+    URL_RE cannot cross `<`, so `https://www.linkedin.com/company/<slug>/` is
+    matched as `https://www.linkedin.com/company/` — a shorter URL that really
+    exists and really 404s, i.e. a finding about a link nobody ever wrote. The
+    same happens to an ellipsis-truncated illustration
+    (`<a href="https://linkedin.com/company/...">`), where clean_url() then
+    strips the dots.
+    """
+    return next_char == "<" or raw_url.endswith(("...", "…"))
+
+
 def looks_like_placeholder(url: str) -> bool:
     """True for documentation examples that must not be fetched."""
     if not url.isascii():
@@ -170,13 +237,19 @@ def looks_like_placeholder(url: str) -> bool:
         return True
     parts = urllib.parse.urlsplit(url)
     host = (parts.hostname or "").lower()
-    if not host or "." not in host or host in PLACEHOLDER_HOSTS:
+    if not host or placeholder_host(host):
         return True
     if PLACEHOLDER_UPPER_RE.search(parts.path + parts.query):
         return True
     segments = [s.lower() for s in parts.path.split("/") if s]
     values = [v.lower() for _, v in urllib.parse.parse_qsl(parts.query, keep_blank_values=True)]
     if any(s in PLACEHOLDER_SEGMENTS for s in segments + values):
+        return True
+    # A URL ending in a one-letter segment is a stand-in, never a page: the
+    # catalog uses `https://github.com/apify/x` in a matcher test matrix to show
+    # a URL that must *not* count as a citation. Only the last segment counts —
+    # `reddit.com/r/saas/` is a real link.
+    if segments and len(segments[-1]) == 1 and segments[-1].isalpha():
         return True
     # A query parameter left empty (`?accountOwner=`) is an unfinished example.
     return parts.query.endswith("=")
@@ -197,29 +270,117 @@ def extract_prose_urls(path: Path) -> list[tuple[str, int]]:
         if in_fence:
             continue
         for match in lint.URL_RE.finditer(line):
-            url = lint.clean_url(match.group(0))
+            raw = match.group(0)
+            url = lint.clean_url(raw)
+            if truncated_at_placeholder(raw, line[match.end():match.end() + 1]):
+                continue
             if lint.is_apify_url(url) or looks_like_placeholder(url):
                 continue
             found.append((url, lineno))
     return found
 
 
+def is_actor_reference(candidate: str) -> bool:
+    """lint_references.valid_actor_id plus the prose-only false positives."""
+    if not lint.valid_actor_id(candidate):
+        return False
+    if candidate in NON_ACTOR_IDS:
+        return False
+    owner = candidate.split("/", 1)[0].lower()
+    if owner in NON_ACTOR_OWNERS or owner == UA_PRODUCT:
+        return False
+    # `acmefeedback.example/in-app-vs-email-feedback-2026` is a sample web page.
+    return owner.rsplit(".", 1)[-1] not in PLACEHOLDER_TLDS
+
+
+def extract_actor_ids(path: Path) -> list[tuple[str, int]]:
+    """Actor ids in one file: the gate's forms plus bare prose code spans.
+
+    lint_references only reads ids out of routing-table cells, CLI commands,
+    --actor flags and store URLs. Prose says things like "Replaces
+    `zhorex/g2-reviews-scraper` (broken)" or lists two ids in one table cell,
+    and those references rot exactly like the tabulated ones — so any code span
+    that is an Actor id counts here.
+    """
+    found: list[tuple[str, int]] = []
+    # actor-id already folds in store-url (apify.com/<owner>/<name>).
+    for actor_id, _, lineno in lint.extract_refs(path.parent, path)["actor-id"]:
+        found.append((actor_id, lineno))
+
+    in_fence = False
+    for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        if lint.FENCE_RE.match(line):
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue  # sample payloads, same rule as for URLs
+        for token in lint.BACKTICKED_RE.findall(line):
+            token = token.strip()
+            if lint.ACTOR_ID_RE.fullmatch(token):
+                found.append((token, lineno))
+
+    return sorted({ref for ref in found if is_actor_reference(ref[0])})
+
+
+def nested_skill_dirs(skill_dir: Path) -> list[Path]:
+    """Child skills of a plugin bundle: skills/<bundle>/skills/<child>/SKILL.md.
+
+    A bundle ships its children's SKILL.md files inside itself, each with its own
+    frontmatter and its own author — so they are skills for every purpose this
+    script has, and were invisible to a sweep that only looked at
+    skills/*/SKILL.md.
+    """
+    nested = skill_dir / "skills"
+    if not nested.is_dir():
+        return []
+    return sorted(d for d in nested.iterdir() if d.is_dir() and (d / "SKILL.md").is_file())
+
+
+def collect_skill_files(skill_dir: Path, children: list[Path]) -> list[Path]:
+    """Every markdown file that belongs to this skill and not to a child skill."""
+    return [
+        md for md in sorted(skill_dir.rglob("*.md"))
+        if not any(child in md.parents for child in children)
+    ]
+
+
+def resolve_selected(arg: str) -> Path:
+    """A CLI argument -> a skill directory (top-level or nested in a bundle)."""
+    candidate = Path(arg)
+    for path in (candidate if candidate.is_absolute() else ROOT / candidate,
+                 lint.SKILLS_DIR / candidate.name):
+        if path.is_dir() and lint.SKILLS_DIR in path.parents:
+            return path
+    raise SystemExit(f"error: '{arg}' is not a skill directory under skills/")
+
+
+def catalog_dirs(selected: list[str]) -> list[Path]:
+    roots = [resolve_selected(arg) for arg in selected] if selected else sorted(
+        d for d in lint.SKILLS_DIR.iterdir()
+        if d.is_dir() and d.name not in lint.EXCLUDED_DIRS
+    )
+    dirs: list[Path] = []
+    for root in roots:
+        dirs.append(root)
+        dirs.extend(nested_skill_dirs(root))
+    return dirs
+
+
 def load_catalog(selected: list[str]) -> tuple[list[Skill], int]:
     """Build the Skill list with all references already extracted."""
     skills: list[Skill] = []
     files_scanned = 0
-    for skill_dir in lint.iter_skill_dirs(selected):
+    for skill_dir in catalog_dirs(selected):
         skill = Skill(skill_dir)
-        frontmatter = parse_frontmatter(skill_dir / "SKILL.md")
+        frontmatter = parse_frontmatter(skill.skill_md)
         skill.author = frontmatter.get("author", "")
         skill.author_url = frontmatter.get("author_url", "")
-        skill.files = lint.collect_md_files(skill_dir)
+        skill.files = collect_skill_files(skill_dir, nested_skill_dirs(skill_dir))
         files_scanned += len(skill.files)
 
         for md_file in skill.files:
             location_prefix = lint.rel(md_file)
-            # actor-id already folds in store-url (apify.com/<owner>/<name>).
-            for actor_id, _, lineno in lint.extract_refs(skill_dir, md_file)["actor-id"]:
+            for actor_id, lineno in extract_actor_ids(md_file):
                 skill.actor_ids.setdefault(actor_id, []).append(f"{location_prefix}:{lineno}")
             for url, lineno in extract_prose_urls(md_file):
                 skill.external_urls.setdefault(url, []).append(f"{location_prefix}:{lineno}")
@@ -234,7 +395,7 @@ def load_catalog(selected: list[str]) -> tuple[list[Skill], int]:
 class HostThrottle:
     """Keep at least `interval` seconds between requests to the same host.
 
-    51 skills produce a few hundred requests, most of them to two hosts
+    The catalog produces a few hundred requests, most of them to two hosts
     (api.apify.com, github.com). Without this, a scheduled run reads as a burst
     and starts collecting 429s, which would turn the whole report into noise.
     """
@@ -280,9 +441,17 @@ class Checker:
     def check_url(self, url: str) -> tuple[str, str]:
         """Return (status, detail); status: ok | dead | unverifiable.
 
-        HEAD first (cheap), falling back to GET when a server rejects HEAD.
-        404/410 and unresolvable hostnames are 'dead'; 403/429/5xx/timeouts are
-        'unverifiable' — plenty of hosts simply refuse robots.
+        HEAD is a cheap first try and *only* that: no verdict other than "alive"
+        is ever taken from it, because plenty of servers answer HEAD with 404,
+        405 or a redirect loop on a URL that serves a perfectly good GET
+        (www.cnbc.com RSS answers HEAD 404, GET 200). Only a GET may declare a
+        link dead.
+
+        404/410 and unresolvable hostnames are 'dead'. A raised 3xx means the
+        server answered with a redirect urllib would not follow (loop, or a HEAD
+        it bounces) — the host is alive, so that is 'ok'. 401/403/429/5xx,
+        timeouts and refused connections are 'unverifiable': plenty of hosts
+        simply refuse robots, and a report must not cry wolf.
         """
         with self._lock:
             cached = self._url_cache.get(url)
@@ -299,22 +468,22 @@ class Checker:
                     with self._request(url, method) as response:
                         code = getattr(response, "status", 200)
                         result = ("ok", f"HTTP {code}")
-                        break
                 except urllib.error.HTTPError as exc:
-                    if exc.code in (404, 410):
+                    if 300 <= exc.code < 400:
+                        result = ("ok", f"HTTP {exc.code} (redirect)")
+                    elif exc.code in (404, 410):
                         result = ("dead", f"HTTP {exc.code}")
-                        break
-                    if exc.code in (400, 403, 405, 501) and method == "HEAD":
-                        continue  # server dislikes HEAD — retry the same URL with GET
-                    result = ("unverifiable", f"HTTP {exc.code}")
-                    break
+                    else:
+                        result = ("unverifiable", f"HTTP {exc.code}")
                 except (urllib.error.URLError, TimeoutError, OSError) as exc:
                     reason = getattr(exc, "reason", exc)
                     if isinstance(reason, socket.gaierror):
                         result = ("dead", "host does not resolve")
                     else:
                         result = ("unverifiable", str(reason))
-                    break
+                if method == "HEAD" and result[0] != "ok":
+                    continue  # inconclusive by construction — ask again with GET
+                break
             if result[0] != "unverifiable":
                 break
             if attempt < self.retries:
@@ -391,9 +560,20 @@ def merge_into(primary: list[dict], secondary: list[dict]) -> list[dict]:
     return remaining
 
 
+def drop_redundant_locations(locations: list[str]) -> list[str]:
+    """Drop `file.md` when `file.md:<line>` is also listed for the same finding.
+
+    The author check knows the file, the prose scan knows the line; keeping both
+    lists the same place twice.
+    """
+    with_lines = {loc.rpartition(":")[0] for loc in locations if loc.rpartition(":")[2].isdigit()}
+    return [loc for loc in locations if loc not in with_lines]
+
+
 def finalize_entries(entries: list[dict]) -> list[dict]:
     for entry in entries:
         entry["authors"] = [json.loads(a) for a in entry["authors"]]
+        entry["locations"] = drop_redundant_locations(entry["locations"])
     return sorted(entries, key=lambda e: (list(FINDING_KINDS).index(e["kind"])
                                           if e["kind"] in FINDING_KINDS else 99,
                                           e["subject"]))
@@ -437,13 +617,30 @@ def check_actors(skills: list[Skill], checker: Checker, workers: int) -> tuple[l
     return findings, notes
 
 
+def skills_without_author_url(skills: list[Skill]) -> list[str]:
+    """Skills whose frontmatter declares no usable top-level author_url.
+
+    Reported as a count, never as a finding: a missing (or `metadata:`-nested,
+    which reads the same to any flat frontmatter reader) author_url is a
+    structural defect the PR-time gate should catch, not catalog rot. Surfacing
+    the number keeps the gap visible instead of silently shrinking the sweep.
+    """
+    return sorted(
+        skill.name for skill in skills
+        # A plugin bundle root has no SKILL.md of its own — its children carry
+        # the frontmatter — so it has no author to miss.
+        if skill.skill_md.is_file()
+        and (not skill.author_url or looks_like_placeholder(skill.author_url))
+    )
+
+
 def check_author_urls(skills: list[Skill], checker: Checker, workers: int) -> tuple[list[dict], list[dict]]:
     owners: dict[str, list[tuple[Skill, list[str]]]] = {}
     for skill in skills:
         url = skill.author_url
         if not url or looks_like_placeholder(url):
             continue
-        owners.setdefault(url, []).append((skill, [f"skills/{skill.name}/SKILL.md"]))
+        owners.setdefault(url, []).append((skill, [lint.rel(skill.skill_md)]))
 
     urls = sorted(owners)
     with ThreadPoolExecutor(max_workers=workers) as pool:
@@ -500,7 +697,10 @@ def render_author(author: dict, mention: bool) -> str:
 
 def render_authors(entry: dict, mention: bool) -> str:
     rendered = sorted({render_author(a, mention) for a in entry["authors"]})
-    return ", ".join(rendered) if rendered else "—"
+    # A plugin bundle root has no frontmatter of its own; when one of its child
+    # skills names the author, "unknown" next to that name is noise.
+    named = [r for r in rendered if r != "unknown"]
+    return ", ".join(named or rendered) or "—"
 
 
 def render_locations(entry: dict, limit: int = 3) -> str:
@@ -512,7 +712,10 @@ def render_locations(entry: dict, limit: int = 3) -> str:
 
 
 def render_markdown(report: dict, mention_authors: bool) -> str:
-    counts = report["checked"]
+    counts = dict(report["checked"])
+    if not report["external_checks"]:
+        # --skip-external: those references were extracted, not checked.
+        counts["author_urls"] = counts["external_urls"] = "0 (skipped)"
     lines = [
         REPORT_MARKER,
         f"# Catalog revalidation — {report['generated_at'][:10]}",
@@ -523,10 +726,18 @@ def render_markdown(report: dict, mention_authors: bool) -> str:
         f"{counts['actor_ids']} actor ids, {counts['author_urls']} author URLs, "
         f"{counts['external_urls']} external links.",
         "",
-        f"**{len(report['findings'])} finding(s)**, "
-        f"{len(report['notes'])} unverifiable.",
+        f"**{len(report['findings'])} finding(s)** (one row per reference, all "
+        f"affected skills listed on it), {len(report['notes'])} unverifiable.",
         "",
     ]
+    skipped = counts.get("author_urls_skipped") or []
+    if skipped:
+        lines += [
+            f"{len(skipped)} skill(s) declare no top-level `author_url` and were "
+            "not author-checked — a frontmatter defect for the PR-time gate, not "
+            f"catalog rot: {', '.join(f'`{name}`' for name in skipped)}.",
+            "",
+        ]
     if mention_authors:
         lines += ["Authors of the affected skills are @-mentioned below.", ""]
     else:
@@ -625,6 +836,7 @@ def main() -> int:
         notes.extend(author_notes + external_notes)
 
     author_urls = {s.author_url for s in skills if s.author_url}
+    no_author_url = skills_without_author_url(skills)
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "duration_seconds": round(time.monotonic() - started, 1),
@@ -634,6 +846,8 @@ def main() -> int:
             "files": files_scanned,
             "actor_ids": len({a for s in skills for a in s.actor_ids}),
             "author_urls": len(author_urls),
+            # Not a finding — see skills_without_author_url().
+            "author_urls_skipped": no_author_url,
             "external_urls": len({u for s in skills for u in s.external_urls}),
             "http_requests": checker.requests,
         },
