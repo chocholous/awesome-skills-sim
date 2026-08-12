@@ -402,26 +402,6 @@
       "category": "data-extraction"
     },
     {
-      "name": "apify-hiring-signals",
-      "source": "./skills/apify-hiring-signals",
-      "skills": "./",
-      "description": "Turns LinkedIn job postings into actionable B2B sales intelligence by chaining three Apify Actors: (1) LinkedIn Jobs Scraper to find companies actively hiring for target roles, (2) Google Search Scraper to pull funding rounds, expansions, and growth signals for each company, and (3) Contact Info Scraper to surface decision-maker emails and phones from company websites. Use when asked to \"find companies hiring [role]\", \"build a prospect list from job postings\", \"identify hiring signals\", \"generate leads from job boards\", \"which companies are investing in [department]\", \"find fast-growing companies in [industry]\", \"sales prospecting from LinkedIn\", \"map who's building a [team type] team\", or \"find companies that recently posted [job title] jobs\".",
-      "keywords": [
-        "sales-intelligence",
-        "hiring-signals",
-        "linkedin-jobs",
-        "lead-generation",
-        "prospecting",
-        "b2b-sales",
-        "growth-signals",
-        "funding",
-        "job-postings",
-        "contacts",
-        "outreach"
-      ],
-      "category": "data-extraction"
-    },
-    {
       "name": "apify-influencer-brand-collabs",
       "source": "./skills/apify-influencer-brand-collabs",
       "skills": "./",
