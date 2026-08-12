@@ -23,7 +23,7 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@v4
 
-      - name: Check PR scope (one skill per PR, no out-of-bounds files)
+      - name: Check PR scope (skill PR vs infra PR)
         id: scope
         continue-on-error: true
         env:
@@ -51,57 +51,100 @@ jobs:
           SKILL_DIRS=$(echo "$CHANGED" | grep -oE '^skills/apify-[^/]+' | sort -u)
           N_SKILLS=$(echo "$SKILL_DIRS" | grep -c . || true)
 
-          # Allowed paths fall into two buckets:
-          #   - Skill submissions: skills/apify-<name>/ only — the catalog is generated.
-          #   - Repo maintenance:  root meta files, CI, scripts, generated agents/.
+          # A PR is a *skill PR* the moment it touches one skills/apify-<name>/
+          # directory, and an *infra PR* otherwise. The two get different
+          # allowlists:
+          #   - skill PR:  skills/apify-<name>/ only. The catalog is generated,
+          #                and a skill submission has no business editing CI,
+          #                the linters or the template.
+          #   - infra PR:  root meta docs on their own. CI, scripts/, agents/,
+          #                .claude-plugin/ and skills/_template/ need the
+          #                'maintainer' label — later steps run scripts/ out of
+          #                the PR checkout, so an unlabeled PR must not be able
+          #                to change what validates it. (GitHub resolves the
+          #                workflow file itself from the PR too; that one is on
+          #                the fork-approval gate and the human stage-1 rule in
+          #                REVIEWING.md, not on this check.)
+          SKILL_PATHS='^skills/apify-[^/]+/'
+          GENERATED_PATHS='^(\.claude-plugin/marketplace\.json|agents/AGENTS\.md)$'
+          INFRA_PATHS='^(\.github/|scripts/|agents/|\.claude-plugin/|skills/_template/)'
+          # The repo layout as a whole — nothing outside it, label or not.
           ALLOWED='^(skills/apify-[^/]+/|skills/_template/|\.claude-plugin/marketplace\.json$|LICENSE$|README\.md$|CONTRIBUTING\.md$|SECURITY\.md$|CODE_OF_CONDUCT\.md$|\.gitignore$|\.github/|scripts/|agents/)'
           OUT_OF_BOUNDS=$(echo "$CHANGED" | grep -vE "$ALLOWED" || true)
 
-          FAIL=0
-
-          # Out-of-scope: PR adds no skill and only touches generated catalog
-          # files — there is nothing for the post-merge bot to regenerate
-          # from. Catch this before the general messages below so the
-          # contributor gets the precise reason instead of the generic
-          # "generated file, edit frontmatter" error (which assumes a skill
-          # dir is present).
-          if [ "$MAINTAINER" -eq 0 ] && [ -z "$SKILL_DIRS" ]; then
-            NON_CATALOG=$(echo "$CHANGED" | grep -vE '^(\.claude-plugin/marketplace\.json|agents/AGENTS\.md|README\.md)$' || true)
-            if [ -z "$NON_CATALOG" ]; then
-              echo "::error::this PR only edits generated catalog files and adds no skill — the catalog is generated from skills/<name>/SKILL.md frontmatter after merge; submit a skill folder instead (see CONTRIBUTING.md)"
-              FAIL=1
+          # README is generated only between the skills-table markers; edits to
+          # the surrounding prose are ordinary doc changes. Both branches below
+          # need this distinction, so resolve it once.
+          README_TABLE_CHANGED=0
+          if echo "$CHANGED" | grep -qxF 'README.md'; then
+            BASE_BLOCK=$(git show "origin/$BASE_REF:README.md" | sed -n '/<!-- BEGIN_SKILLS_TABLE -->/,/<!-- END_SKILLS_TABLE -->/p')
+            HEAD_BLOCK=$(sed -n '/<!-- BEGIN_SKILLS_TABLE -->/,/<!-- END_SKILLS_TABLE -->/p' README.md)
+            if [ "$BASE_BLOCK" != "$HEAD_BLOCK" ]; then
+              README_TABLE_CHANGED=1
             fi
           fi
 
-          if [ "$MAINTAINER" -eq 0 ] && [ "$N_SKILLS" -gt 1 ]; then
+          FAIL=0
+
+          if [ -n "$OUT_OF_BOUNDS" ]; then
+            echo "::error::PR touches files outside the repo layout (skill dirs, root meta files, .github/, scripts/, agents/):"
+            echo "$OUT_OF_BOUNDS" | sed 's/^/  - /'
+            FAIL=1
+          fi
+
+          if [ "$MAINTAINER" -eq 1 ]; then
+            echo "maintainer PR — the skill/infra split is not enforced."
+            if [ "$FAIL" -eq 1 ]; then
+              exit 1
+            fi
+            exit 0
+          fi
+
+          if [ "$N_SKILLS" -gt 1 ]; then
             echo "::error::PR touches $N_SKILLS skills; one skill per PR (or ask a maintainer for the 'maintainer' label)."
             echo "$SKILL_DIRS" | sed 's/^/  - /'
             FAIL=1
           fi
 
-          if [ -n "$OUT_OF_BOUNDS" ]; then
-            echo "::error::PR touches files outside the allowed paths (skill dirs, root meta files, .github/, scripts/, agents/):"
-            echo "$OUT_OF_BOUNDS" | sed 's/^/  - /'
-            FAIL=1
-          fi
+          if [ -n "$SKILL_DIRS" ]; then
+            # --- skill PR ---
+            # Generated files first: they get the precise "edit frontmatter"
+            # reason instead of the generic out-of-your-skill-dir message.
+            GENERATED_TOUCHED=$(echo "$CHANGED" | grep -E "$GENERATED_PATHS" || true)
 
-          # Skill PRs must not touch generated files — the bot regenerates them
-          # after merge. Infra PRs (no skills/ changes) and maintainer-labeled
-          # PRs may touch them.
-          if [ "$MAINTAINER" -eq 0 ] && [ -n "$SKILL_DIRS" ]; then
-            GENERATED_TOUCHED=$(echo "$CHANGED" | grep -E '^(\.claude-plugin/marketplace\.json|agents/AGENTS\.md)$' || true)
-
-            if echo "$CHANGED" | grep -qx 'README.md'; then
-              BASE_BLOCK=$(git show "origin/$BASE_REF:README.md" | sed -n '/<!-- BEGIN_SKILLS_TABLE -->/,/<!-- END_SKILLS_TABLE -->/p')
-              HEAD_BLOCK=$(sed -n '/<!-- BEGIN_SKILLS_TABLE -->/,/<!-- END_SKILLS_TABLE -->/p' README.md)
-              if [ "$BASE_BLOCK" != "$HEAD_BLOCK" ]; then
-                GENERATED_TOUCHED=$(printf '%s\nREADME.md (skills table block)' "$GENERATED_TOUCHED")
-              fi
+            if [ "$README_TABLE_CHANGED" -eq 1 ]; then
+              GENERATED_TOUCHED=$(printf '%s\nREADME.md (skills table block)' "$GENERATED_TOUCHED")
             fi
 
             if [ -n "$GENERATED_TOUCHED" ]; then
               echo "::error::.claude-plugin/marketplace.json: generated file — edit SKILL.md frontmatter instead, the bot regenerates the catalog after merge"
               echo "$GENERATED_TOUCHED" | grep . | sed 's/^/  - /'
+              FAIL=1
+            fi
+
+            STRAY=$(echo "$CHANGED" | grep -vE "$SKILL_PATHS" | grep -vE "$GENERATED_PATHS" || true)
+            if [ -n "$STRAY" ]; then
+              echo "::error::a skill PR may only change files inside skills/apify-<name>/ — split these out into their own PR (a maintainer adds the 'maintainer' label to it):"
+              echo "$STRAY" | sed 's/^/  - /'
+              FAIL=1
+            fi
+          else
+            # --- infra PR ---
+            # Nothing to regenerate from: the catalog is derived from skill
+            # frontmatter, so a hand-edited catalog with no skill is a dead end.
+            NON_CATALOG=$(echo "$CHANGED" | grep -vE "$GENERATED_PATHS" || true)
+            if [ "$README_TABLE_CHANGED" -eq 1 ]; then
+              NON_CATALOG=$(echo "$NON_CATALOG" | grep -vxF 'README.md' || true)
+            fi
+            if [ -z "$NON_CATALOG" ]; then
+              echo "::error::this PR only edits generated files (marketplace.json, AGENTS.md, the README skills table) and adds no skill — they are generated from skills/<name>/SKILL.md frontmatter after merge; submit a skill folder instead (see CONTRIBUTING.md)"
+              FAIL=1
+            fi
+
+            INFRA_TOUCHED=$(echo "$CHANGED" | grep -E "$INFRA_PATHS" || true)
+            if [ -n "$INFRA_TOUCHED" ]; then
+              echo "::error::changing CI, scripts/, the generated catalog or skills/_template/ needs a maintainer to add the 'maintainer' label — these files decide how every PR is validated:"
+              echo "$INFRA_TOUCHED" | sed 's/^/  - /'
               FAIL=1
             fi
           fi
