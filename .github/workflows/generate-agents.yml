@@ -230,7 +230,7 @@ jobs:
           fi
 
   regenerate:
-    if: github.event_name == 'push' && github.actor != 'awesome-skills-sim-bot[bot]'
+    if: github.event_name == 'push' && !endsWith(github.actor, '[bot]')
     # Serialize regen runs: two quick merges must not race each other's push
     # (a lost race can leave main's catalog stale until the next push).
     concurrency:
@@ -247,6 +247,18 @@ jobs:
           client-id: ${{ vars.APP_CLIENT_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
+      # Identity of the app's own bot user, resolved at run time — nothing here
+      # names the app, so the workflow moves between repos unchanged.
+      - name: Resolve bot identity
+        id: bot
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
+        run: |
+          USER_ID=$(gh api "/users/${APP_SLUG}[bot]" --jq .id)
+          echo "name=${APP_SLUG}[bot]" >> "$GITHUB_OUTPUT"
+          echo "email=${USER_ID}+${APP_SLUG}[bot]@users.noreply.github.com" >> "$GITHUB_OUTPUT"
+
       - name: Checkout latest main
         uses: actions/checkout@v4
         with:
@@ -258,8 +270,8 @@ jobs:
 
       - name: Regenerate and push catalog
         run: |
-          git config user.name "awesome-skills-sim-bot[bot]"
-          git config user.email "awesome-skills-sim-bot[bot]@users.noreply.github.com"
+          git config user.name "${{ steps.bot.outputs.name }}"
+          git config user.email "${{ steps.bot.outputs.email }}"
           for attempt in 1 2 3; do
             uv run scripts/generate_agents.py
             if git diff --quiet; then
